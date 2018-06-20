@@ -1,0 +1,34 @@
+Endorse Client
+
+Author: Olivier Comarmond
+
+Release Notes:
+Krypton Client v0.03.01 (yaman) - 18/06/2018
+ - Start() method divided into several method to facilitate calling from external component independently. 
+ - Introduced KryptonClientConfig (a class to pass parameters to KryptonClient)
+ - introduced AutoDetectManager to detect SIM card from local resource
+ - Implemented SerialPortEventListener and message buffer to receive message from serial port
+ 
+Krypton Client v0.02.01 - 15/06/2018
+ - Clear key cache in krypton client when SIM is swapped
+ 
+Krypton Client v0.02.00 - 13/06/2018
+ - Key Cache mechanism introduced
+ - Inventory bootstrap support (in json output)
+ - Fixed issue of positive outcome even if the service returned error
+ - Endorse URL modified 
+ 
+Krypton Client v0.01.01 - 08/06/2018
+ - Extended debug to http responses from API  
+ 
+Krypton Client v0.01.00 - 07/06/2018
+ - Initial release on prod endpoint as default 
+ 
+Krypton Client v0.00.05 - 05/06/2018
+ - Added one override command line switch for key agreement authentication URL API (-authurl) see help
+ 
+Krypton Client v0.00.04 - 04/06/2018
+ - Renamed to Krypton client - Many updates to the Library.
+
+Endorse Client v0.00.01 - 23/05/2018
+ - Initial release endorsement through APIs using SIM as secure element with getKey and getToken function

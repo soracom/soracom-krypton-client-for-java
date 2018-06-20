@@ -1,0 +1,33 @@
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'eclipse'
+apply plugin: 'application'
+
+repositories {
+    jcenter()
+}
+
+mainClassName = 'io.soracom.krypton.KryptonClient'
+
+archivesBaseName = rootProject.name
+version = '0.0.4-SNAPSHOT' 
+
+dependencies {
+   // Java Simple Serial Connector 
+    compile 'org.scream3r:jssc:2.8.0'
+    compile 'com.google.code.gson:gson:2.8.2'
+    compile 'org.json:json:20140107'
+    testCompile 'junit:junit:4.12'
+}
+
+task fatJar(type: Jar) {
+	manifest {
+	    attributes 'Implementation-Title': archivesBaseName,
+					'Implementation-Version': version,
+					'Main-Class': 'io.soracom.krypton.KryptonClient'
+    }
+    baseName = archivesBaseName
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+

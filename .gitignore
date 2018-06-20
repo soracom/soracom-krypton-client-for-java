@@ -6,6 +6,7 @@
 /.gradle/
 /.gradle
 /.DS_Store
+.DS_Store
 .gradle
 .gradle/
 maven-repository
