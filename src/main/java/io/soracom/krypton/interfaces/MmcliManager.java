@@ -19,65 +19,64 @@ import java.io.InputStreamReader;
 //import java.util.ArrayList;
 //import java.util.List;
 
+import io.soracom.krypton.common.TextLog;
 import io.soracom.krypton.utils.Utilities;
 
-
 /**
- * Serial Port Communications handler (geared towards sending and receiving of AT commands
- * Followed examples from https://code.google.com/archive/p/java-simple-serial-connector/wikis/jSSC_examples.wiki
+ * Serial Port Communications handler (geared towards sending and receiving of
+ * AT commands Followed examples from
+ * https://code.google.com/archive/p/java-simple-serial-connector/wikis/jSSC_examples.wiki
+ * 
  * @author olivier.comarmond
  *
  */
-public class MmcliManager  implements IUiccInterface  {
+public class MmcliManager implements IUiccInterface {
 
 	private String lastError;
 	private String modemIndex = "0";
 	private String lastCommand;
 	private StringBuilder lastResponse;
 	private String lastMessage;
-	private boolean debug;
-	private int maxResponseWaitTime = 60000; //Wait for a maximum of 60 second for a full response
+	private int maxResponseWaitTime = 60000; // Wait for a maximum of 60 second for a full response
 
 	public MmcliManager() {
 
-	} 
-	
-	public static boolean isUnsupportedPlatform() {
-		 String OS_NAME = System.getProperty("os.name").toLowerCase();
-		 if(OS_NAME.startsWith("windows") || OS_NAME.startsWith("mac")) {
-			 return true;
-		 }
-		 return false;
 	}
-	
+
+	public static boolean isUnsupportedPlatform() {
+		String OS_NAME = System.getProperty("os.name").toLowerCase();
+		if (OS_NAME.startsWith("windows") || OS_NAME.startsWith("mac")) {
+			return true;
+		}
+		return false;
+	}
+
 	public String send(String command) {
-		if (command == null || command.isEmpty()){
+		if (command == null || command.isEmpty()) {
 			return "";
 		}
 		lastCommand = command;
-		if (!command.endsWith("\r\n")){
-			command+="\r\n"; //Command termination character
+		if (!command.endsWith("\r\n")) {
+			command += "\r\n"; // Command termination character
 		}
 
-		if (debug){
-			log("Command: "+command);
-		}
+		TextLog.log("Command: " + command);
+
 		lastResponse = new StringBuilder();
-		
+
 		lastResponse.append(executeCliCommand(command));
-		
+
 		return lastResponse.toString();
 
-
 	}
-	
+
 	private String executeCliCommand(String command) {
 
 		StringBuilder mmCliCommand = new StringBuilder();
 		mmCliCommand.append("mmcli -m ");
 		mmCliCommand.append(modemIndex);
 		mmCliCommand.append(" --timeout=");
-		mmCliCommand.append( Integer.toString((int)(maxResponseWaitTime/1000)) ); //timeout in seconds
+		mmCliCommand.append(Integer.toString((int) (maxResponseWaitTime / 1000))); // timeout in seconds
 		mmCliCommand.append(" --command=");
 		mmCliCommand.append(command);
 
@@ -86,65 +85,52 @@ public class MmcliManager  implements IUiccInterface  {
 
 		Process p;
 		try {
-			if (debug){
-				log("Executing command: "+mmCliCommand.toString());
-            }
+			TextLog.log("Executing command: " + mmCliCommand.toString());
+
 			p = Runtime.getRuntime().exec(mmCliCommand.toString());
 			p.waitFor();
-			BufferedReader reader =
-                            new BufferedReader(new InputStreamReader(p.getInputStream()));
+			BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
 
-                        String line = "";
-			while ((line = reader.readLine())!= null) {
-				if (line.startsWith("^")){
-					continue; //Ignore unsolicited codes
+			String line = "";
+			while ((line = reader.readLine()) != null) {
+				if (line.startsWith("^")) {
+					continue; // Ignore unsolicited codes
 				}
-				if (line.startsWith("response: '")){
-					if (line.endsWith("'")){
-						output.append(line.substring(11,line.length()-1) + "\r\n");
-					}
-					else
-					{
+				if (line.startsWith("response: '")) {
+					if (line.endsWith("'")) {
+						output.append(line.substring(11, line.length() - 1) + "\r\n");
+					} else {
 						output.append(line.substring(11) + "\r\n");
 					}
-				}
-				else
-				{
-					if (line.endsWith("'")){
-						output.append(line.substring(0,line.length()-1) + "\r\n");
-					}
-					else
-					{
+				} else {
+					if (line.endsWith("'")) {
+						output.append(line.substring(0, line.length() - 1) + "\r\n");
+					} else {
 						output.append(line + "\r\n");
 					}
 				}
 			}
-			
-			BufferedReader errorReader =
-                    new BufferedReader(new InputStreamReader(p.getErrorStream()));
-			while ((line = errorReader.readLine())!= null) {
+
+			BufferedReader errorReader = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+			while ((line = errorReader.readLine()) != null) {
 				error.append(line + "\r\n");
 			}
 			lastError = error.toString();
-			if (lastError==null || lastError.isEmpty()){
-				output.append("OK");	
-			}
-			else{
+			if (lastError == null || lastError.isEmpty()) {
+				output.append("OK");
+			} else {
 				output.append("ERROR");
 			}
-			if (debug){
-				log("response: '"+output.toString()+"'");
-            	if (lastError!=null && !lastError.isEmpty()){
-            		log("error: '"+lastError+"'");
-            	}
-            }
-			
-			
+
+			TextLog.log("response: '" + output.toString() + "'");
+			if (lastError != null && !lastError.isEmpty()) {
+				TextLog.log("error: '" + lastError + "'");
+			}
+
 		} catch (Exception e) {
-			log("Error invoking mmcli: "+e.getMessage());
+			TextLog.log("Error invoking mmcli: " + e.getMessage());
 		}
-		return output.toString(); 
-		 
+		return output.toString();
 
 	}
 
@@ -156,15 +142,6 @@ public class MmcliManager  implements IUiccInterface  {
 		this.lastError = lastError;
 	}
 
-	
-	public boolean isDebug() {
-		return debug;
-	}
-
-	public void setDebug(boolean debug) {
-		this.debug = debug;
-	}
-	
 	public String getModemIndex() {
 		return modemIndex;
 	}
@@ -192,57 +169,46 @@ public class MmcliManager  implements IUiccInterface  {
 	@Override
 	public String readImsi() {
 		String imsi = send("AT+CIMI");
-		if (imsi!=null && !imsi.isEmpty()){
-			return imsi; 
-		}
-		else
-		{
+		if (imsi != null && !imsi.isEmpty()) {
+			return imsi;
+		} else {
 			return null;
 		}
 	}
 
 	@Override
 	public byte[] authenticate(byte[] rand, byte[] autn) {
-		byte[] commandData = new byte[rand.length + autn.length+2];  
-		int i=0;
-		commandData[i++] = (byte)(rand.length & 0x000000FF);
+		byte[] commandData = new byte[rand.length + autn.length + 2];
+		int i = 0;
+		commandData[i++] = (byte) (rand.length & 0x000000FF);
 		i = Utilities.arrayCopy(rand, 0, commandData, i, rand.length);
-		commandData[i++] = (byte)(autn.length & 0x000000FF);
+		commandData[i++] = (byte) (autn.length & 0x000000FF);
 		i = Utilities.arrayCopy(autn, 0, commandData, i, autn.length);
 		StringBuilder sb = new StringBuilder();
-		sb.append( "00880081");
-		sb.append(Utilities.byteToHexString((byte)(commandData.length&0x000000FF)));
+		sb.append("00880081");
+		sb.append(Utilities.byteToHexString((byte) (commandData.length & 0x000000FF)));
 		sb.append(Utilities.byteArrayToHexString(commandData));
-		String query = sb.toString()+"00";//append expected length of 00
-		String deviceResponse = send("AT+CSIM="+Integer.toString(query.length())+",\""+query+"\"");
-		if (deviceResponse.toUpperCase().contains("ERROR")){
-			
-			deviceResponse = send("AT+CSIM="+Integer.toString(sb.length())+",\""+sb.toString()+"\"");
+		String query = sb.toString() + "00";// append expected length of 00
+		String deviceResponse = send("AT+CSIM=" + Integer.toString(query.length()) + ",\"" + query + "\"");
+		if (deviceResponse.toUpperCase().contains("ERROR")) {
+
+			deviceResponse = send("AT+CSIM=" + Integer.toString(sb.length()) + ",\"" + sb.toString() + "\"");
 		}
 
-		String sw = deviceResponse.substring(deviceResponse.length()-4);
-		if (sw.startsWith("61") ){
-			deviceResponse = send("AT+CSIM=10,\"00C00000"+sw.substring(2)+"\"");
+		String sw = deviceResponse.substring(deviceResponse.length() - 4);
+		if (sw.startsWith("61")) {
+			deviceResponse = send("AT+CSIM=10,\"00C00000" + sw.substring(2) + "\"");
 		}
-		if (deviceResponse.endsWith("9000") ){
-			byte[] retVal = Utilities.hexStringToByteArray(deviceResponse.substring(0, deviceResponse.length()-4));
+		if (deviceResponse.endsWith("9000")) {
+			byte[] retVal = Utilities.hexStringToByteArray(deviceResponse.substring(0, deviceResponse.length() - 4));
 			return retVal;
-		}
-		else{
+		} else {
 			return null;
 		}
-	}  
-	
+	}
+
 	@Override
 	public boolean disconnect() {
 		return true;
 	}
-	
-	private void log(String log) {
-		if(debug) {
-			System.out.println(log);
-		}
-	}
-		
-
 }

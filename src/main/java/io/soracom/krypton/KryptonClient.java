@@ -14,6 +14,7 @@
  */
 package io.soracom.krypton;
 
+import java.awt.event.TextListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,6 +33,7 @@ import io.soracom.krypton.beans.MilenageParamsBean;
 import io.soracom.krypton.common.AuthenticationResponse;
 import io.soracom.krypton.common.AuthenticationResponse.ResultState;
 import io.soracom.krypton.common.ITextLogListener;
+import io.soracom.krypton.common.TextLog;
 import io.soracom.krypton.common.TextLogItem;
 import io.soracom.krypton.interfaces.AutoDetectManager;
 import io.soracom.krypton.interfaces.CommManager;
@@ -41,9 +43,28 @@ import io.soracom.krypton.interfaces.MmcliManager;
 import io.soracom.krypton.interfaces.UiccInterfaceType;
 import io.soracom.krypton.utils.Utilities;
 
-public class KryptonClient implements ITextLogListener  {
+public class KryptonClient {
 
 	private static KeyCache keyCache = new KeyCache(System.getProperty("user.home")+ File.separator + ".kcache");
+	
+	private KryptonClientConfig kryptonClientConfig;
+	
+	public KryptonClient(KryptonClientConfig kryptonClientConfig) {
+		this.kryptonClientConfig = kryptonClientConfig;
+		initLogger(null);
+	}
+	public KryptonClient(KryptonClientConfig kryptonClientConfig, ITextLogListener logListener) {
+		this.kryptonClientConfig = kryptonClientConfig;
+		initLogger(logListener);
+	}
+	
+	private void initLogger(ITextLogListener logListener) {
+		if(logListener == null) {
+			logListener = new KryptonClientLogListener(kryptonClientConfig.isDebug() == false);
+		}
+		TextLog.clerListener();
+		TextLog.addListener(logListener);
+	}
 	
 	public enum RunLevel {
 		NORMAL, LIST_COM_PORTS, DEVICE_INFO;
@@ -97,44 +118,52 @@ public class KryptonClient implements ITextLogListener  {
 		helpText.append("  --debug		   	Set debug mode on\r\n");
 		helpText.append("  --help          	Display this help message and stop\r\n");
 		helpText.append("\r\n");
-		log(helpText.toString());
+		stdout(helpText.toString());
 	}
 	
-	protected void start(RunLevel runlevel, KryptonClientConfig kryptonClientConfig){
+	protected void start(RunLevel runlevel){
 		switch (runlevel)
     	{
         	case NORMAL: //Normal operation Generate App key
         		try {
         			if (kryptonClientConfig.getKeyDistributionUrl()==null || kryptonClientConfig.getKeyDistributionUrl().isEmpty()){ //Generate Application key use case
-        				AppkeyBean result = generateApplicationKey(kryptonClientConfig);
-        				log(result.toJson());
+        				AppkeyBean result = generateApplicationKey();
+        				stdout(result.toJson());
         			}else {
-        				KeyDistributionBean result = invokeKeyDistributionService(kryptonClientConfig);
-        				log(result.toJson());        				
+        				KeyDistributionBean result = invokeKeyDistributionService();
+        				stdout(result.toJson());        				
         			}
         		}catch(Exception e) {
-        			logError(e.getMessage());
+        			TextLog.error(e.getMessage());
         		}
         		break;
         	case LIST_COM_PORTS://Just list comm ports and exit
-        		List<String> ports = listComPorts(kryptonClientConfig);
+        		List<String> ports = listComPorts();
 	        	if (ports.size() == 0){
-	        		log("No serial ports detected!");
+	        		stdout("No serial ports detected!");
 	        	}
 	        	for (String port:ports){
-	        		log(port);
+	        		stdout(port);
 	        	}
 	        	break;
         	case DEVICE_INFO://Connect to device and query manufacturer info
-        		log(getDeviceInfo(kryptonClientConfig));
+        		stdout(getDeviceInfo());
         		break;
         	default:
         		throw new IllegalArgumentException("Unsupported runlevel. runlevel="+runlevel.toString());
         
     	}		
 	}
+	
+	private static void stdout(String message) {
+		System.out.println(message);
+	}
+	
+	protected void init() {
+		
+	}
 
-	public AppkeyBean generateApplicationKey(KryptonClientConfig kryptonClientConfig) throws Exception{
+	public AppkeyBean generateApplicationKey() throws Exception{
 		AuthResult authResult = doAuthentication(kryptonClientConfig);
 		long currentTimeStamp = System.currentTimeMillis();
 		
@@ -163,7 +192,7 @@ public class KryptonClient implements ITextLogListener  {
 		//END DEBUG
 	}
 	
-	public KeyDistributionBean invokeKeyDistributionService(KryptonClientConfig kryptonClientConfig) throws Exception{
+	public KeyDistributionBean invokeKeyDistributionService() throws Exception{
 		AuthResult authResult = doAuthentication(kryptonClientConfig);
 		long currentTimeStamp = System.currentTimeMillis();
 		
@@ -181,12 +210,12 @@ public class KryptonClient implements ITextLogListener  {
 			}
 			return result;
 		}else {
-			throw new Exception("Service response is empty.");
+			throw new RuntimeException("Service response is empty.");
 		}
 	}
 	
 	@SuppressWarnings("unchecked")
-	public List<String> listComPorts(KryptonClientConfig kryptonClientConfig){
+	public List<String> listComPorts(){
     	String[] ports = CommManager.getAvailablePorts();
     	if (ports==null || ports.length==0){
     		return Collections.EMPTY_LIST;
@@ -194,14 +223,14 @@ public class KryptonClient implements ITextLogListener  {
     	return Arrays.asList(ports);
 	}
 	
-	public String getDeviceInfo(KryptonClientConfig kryptonClientConfig){
+	public String getDeviceInfo(){
 		CommManager	commManager= createCommManager(kryptonClientConfig.getCommunicationDeviceConfig());
 		return commManager.queryDevice();
 	}
 	
 	public void clearCache() {
 		keyCache.clear();
-		log("key cache has been cleared.");
+		TextLog.log("key cache has been cleared.");
 	}
 	
 	private static class AuthResult{
@@ -212,11 +241,7 @@ public class KryptonClient implements ITextLogListener  {
 	protected AuthResult doAuthentication(KryptonClientConfig kryptonClientConfig) {
 		AuthResult authResult = new AuthResult();
 		IUiccInterface uiccInterface = createUiccInterface(kryptonClientConfig);
-		if (kryptonClientConfig.isDebug()){ //Only set debug mode if it is true
-			uiccInterface.setDebug(kryptonClientConfig.isDebug());
-			KryptonAPI.setDebug(kryptonClientConfig.isDebug());
-		}
-		
+
 		String imsi=uiccInterface.readImsi();
 		if (imsi==null || imsi.isEmpty()){
 			throw new RuntimeException("IMSI not retrieved! Halting key agreement negociation!");
@@ -233,7 +258,7 @@ public class KryptonClient implements ITextLogListener  {
 					if (aliasParts.length>1){
 						authResult.keyId = aliasParts[1]; //Key ID is second part
 						authResult.ck=keyCache.getKeyBytes(alias);
-						log("retrieve keyId and ck from key cache. keyId=" + authResult.keyId);
+						TextLog.log("retrieve keyId and ck from key cache. keyId=" + authResult.keyId);
 						break;
 					}
 					else
@@ -342,7 +367,7 @@ public class KryptonClient implements ITextLogListener  {
 			return createMmcliManager(kryptonClientConfig.getCommunicationDeviceConfig());
 		}
 		case autoDetect:{
-			return new AutoDetectManager(kryptonClientConfig.isDebug());
+			return new AutoDetectManager();
 		}
 		default:
 			throw new IllegalArgumentException("Unsupported UiccInterfaceType. type:"+uiccInterfaceType.toString());
@@ -466,7 +491,8 @@ public class KryptonClient implements ITextLogListener  {
 			kryptonClientConfig.setCommunicationDeviceConfig(communicationDeviceConfig);
        }
 	   catch (Exception ex){
-		   logError("Illegal argument: "+ex.getMessage());
+		   TextLog.error("Illegal argument: "+ex.getMessage());
+		   System.exit(-1);
 	   }
        try{
 	       //Check for execution commands
@@ -493,60 +519,44 @@ public class KryptonClient implements ITextLogListener  {
 	    		}
 	        
 	    	}
-	        KryptonClient client= new KryptonClient();
+	        KryptonClient client= new KryptonClient(kryptonClientConfig);
     		if (doubleOptsList.contains("clearCache")){
     			client.clearCache();
     		}
-	        KryptonAPI.registerLogListener(client);
-	        client.start(runLevel, kryptonClientConfig);
-	        
-	        
+	        client.start(runLevel);
+	        System.exit(0);
        }
 	   catch (Exception ex){
-		   logError("Error: "+ex.getMessage());
+		   TextLog.error(ex.getMessage());
+		   System.exit(-1);
 	   }
-	    
+
 	}
 
-	private static void log(String line){
-    	System.out.println(line);
-    }
-	
-	
-	private static void logError(String line){
-		System.err.println(line);
-    }
-	
-	@Override
-	public void itemAdded(TextLogItem item) {
-
-    	String line = "";
-		switch (item.getType()){
-
-		 	case LOG:
-				line = item.getReadableTime()+": "+item.getDescription();
-				log(line);
-				break;
-				
-			case WARN:
-				line = item.getReadableTime()+": [WARNING] "+item.getDescription();
-				log(line);
-				break;
-				
-			case ERR:
-				line = item.getReadableTime()+": [ERROR] "+item.getDescription();
-				logError(line);
-				break;
+	public static class KryptonClientLogListener implements ITextLogListener{
+		private boolean suppressLogOutput;
+		public KryptonClientLogListener() {
 		}
-		
-
-	}
-
-	@Override
-	public void itemsCleared() {
-
-		
-	}
+		public KryptonClientLogListener(boolean suppressLogOutput) {
+			setSuppressLog(suppressLogOutput);
+		}
+		public void setSuppressLog(boolean suppressLogOutput) {
+			this.suppressLogOutput = suppressLogOutput;
+		}
+		@Override
+		public void itemAdded(TextLogItem item) {
+			switch (item.getType()){
 	
-	
+			 	case LOG:
+			 	case WARN:
+			 		if(suppressLogOutput == false) {
+						System.out.println(item.toString());
+			 		}
+					break;
+				case ERR:
+					System.err.println(item.toString());
+					break;
+			}
+		}
+	}	
 }

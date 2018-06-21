@@ -36,40 +36,12 @@ import io.soracom.krypton.beans.SessionDataBean;
 import io.soracom.krypton.beans.TokenBean;
 import io.soracom.krypton.beans.XresBean;
 import io.soracom.krypton.common.HttpResponse;
-import io.soracom.krypton.common.ITextLogListener;
 import io.soracom.krypton.common.TextLog;
-import io.soracom.krypton.common.TextLogItem;
+import io.soracom.krypton.common.TextLogItem.TextLogItemType;
 import io.soracom.krypton.utils.Utilities; 
 
 public class KryptonAPI {
 	
-	private static boolean debug;
-	private static TextLog log = new TextLog();
-	
-	/**
-	 * Register a client to receive internal log messages
-	 * @param listener - an ITextLogListener interface
-	 */
-	public static void registerLogListener(ITextLogListener listener){
-		log.addListener(listener);
-	}
-	
-	/**
-	 * Deregister a client to receive internal log messages
-	 * @param listener - an ITextLogListener interface
-	 */
-	public void deregisterLogListener(ITextLogListener listener) {
-        log.removeListener(listener);
-    }
-	
-	public static boolean isDebug() {
-		return debug;
-	}
-
-	public static void setDebug(boolean debug) {
-		KryptonAPI.debug = debug;
-	}
-
 	/**
 	 * Internal function to handle HTTP Post to the selected URL
 	 * @param url - full URL uncluding http:// or https://
@@ -207,28 +179,23 @@ public class KryptonAPI {
 			if (auts!=null){
 				content.setAuts(auts);
 			}
-			if (debug) {
-				System.out.println("invoke KeyAgreement. params="+content.toJson());
-			}
+			TextLog.log("invoke KeyAgreement. params="+content.toJson());
+
 			HttpResponse response = sendPost(url, content.toJson());
 			if ((response.getCode()==200 || response.getCode()==401) && response.getContents()!=null){
 				retVal = MilenageParamsBean.fromJson(response.getContents());
 			}
 			else
 			{
-				if (debug)
-				{
-					logError("While calling key agreement URL "+url+", received http response: "+ Integer.toString(response.getCode()));
-					if (response.getContents()!=null && !response.getContents().isEmpty()){
-						logError("Body: "+ response.getContents());	
-					}
-					
-				}
+				TextLog.error("While calling key agreement URL "+url+", received http response: "+ Integer.toString(response.getCode()));
+				if (response.getContents()!=null && !response.getContents().isEmpty()){
+					TextLog.error("Body: "+ response.getContents());	
+				}					
 			}
 			return retVal;
 		}
 		catch (Exception ex){
-			logError(ex.getMessage());
+			TextLog.error(ex.getMessage());
 			return null;
 		}
 	}
@@ -250,18 +217,14 @@ public class KryptonAPI {
 			}
 			else
 			{
-				if (debug)
-				{
-					logError("While calling verify URL "+url+", received http response: "+ Integer.toString(response.getCode()));
-					if (response.getContents()!=null && !response.getContents().isEmpty()){
-						logError("Body: "+ response.getContents());	
-					}
-					
+				TextLog.error("While calling verify URL "+url+", received http response: "+ Integer.toString(response.getCode()));
+				if (response.getContents()!=null && !response.getContents().isEmpty()){
+					TextLog.error("Body: "+ response.getContents());	
 				}
 			}
 		}
 		catch (Exception ex){
-			logError (ex.getMessage());
+			TextLog.error(ex.getMessage());
 		}
 		return false;
 	}
@@ -286,7 +249,7 @@ public class KryptonAPI {
 			return retVal;
 		}
 		catch (Exception ex){
-			logError (ex.getMessage());
+			TextLog.error(ex.getMessage());
 			return null;
 		}
 	}
@@ -311,20 +274,11 @@ public class KryptonAPI {
 			return retVal;
 		}
 		catch (Exception ex){
-			logError (ex.getMessage());
+			TextLog.error(ex.getMessage());
 			return null;
 		}
 	}
-	
-	/**
-	 * Internal Error Local logging function - logs to internal TextLog object
-	 * Register (registerLogListener) to the log for client to receive the messages
-	 * @param line
-	 */
-	
-	private static void logError(String line){
-    	log.add(new TextLogItem(TextLogItem.TextLogItemType.ERR, line));
-    }
+
 	/**
 	 * Method used to calculate the signature to append to key request messages
 	 * @param message - body contents of the http request
@@ -422,24 +376,16 @@ public class KryptonAPI {
 			}
 			else
 			{
-				if (debug)
-				{
-					logError("While calling key distribution service URL "+url+", received http response: "+ Integer.toString(response.getCode()));
-					if (response.getContents()!=null && !response.getContents().isEmpty()){
-						logError("Body: "+ response.getContents());	
-					}
-					
+				TextLog.error("While calling key distribution service URL "+url+", received http response: "+ Integer.toString(response.getCode()));
+				if (response.getContents()!=null && !response.getContents().isEmpty()){
+					TextLog.error("Body: "+ response.getContents());	
 				}
 			}
 			return retVal;
 		}
 		catch (Exception ex){
-			logError (ex.getMessage());
+			TextLog.error(ex.getMessage());
 			return null;
 		}
-	}
-
-	
-	
-	
+	}	
 }

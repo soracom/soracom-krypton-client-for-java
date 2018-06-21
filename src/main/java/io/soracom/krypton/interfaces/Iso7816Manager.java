@@ -30,6 +30,7 @@ import io.soracom.krypton.common.APDU;
 import io.soracom.krypton.common.DIR;
 import io.soracom.krypton.common.FCP;
 import io.soracom.krypton.common.IMSI;
+import io.soracom.krypton.common.TextLog;
 import io.soracom.krypton.utils.Utilities;
 
 
@@ -43,7 +44,6 @@ public class Iso7816Manager implements IUiccInterface {
 	public static final byte[] FID_MF = new byte[] {(byte)0x3F, (byte)0x00};
 	public static final byte[] FID_EF_DIR = new byte[] {(byte)0x2F, (byte)0x00};
 	public static final byte[] FID_EF_IMSI = new byte[] {(byte)0x6F, (byte)0x07};
-	private boolean debug;
 	private byte[] adfUsim;
 	
 	public enum CardProtocol{
@@ -67,14 +67,6 @@ public class Iso7816Manager implements IUiccInterface {
     public Iso7816Manager(CardTerminal reader){
     	this.reader = reader;
     }
-    
-    public boolean isDebug() {
-		return debug;
-	}
-
-	public void setDebug(boolean debug) {
-		this.debug = debug;
-	}
 
 	public boolean connect(CardProtocol protocol){
     		    	
@@ -188,12 +180,12 @@ public class Iso7816Manager implements IUiccInterface {
 		
 			try{
 				ResponseAPDU res = getChannel().transmit(cmdApdu);
-				if (debug){
-					APDU apdu = APDU.fromCommandAPDU(cmdApdu);
-					apdu.parseResponse(res);
-					System.out.println("REM "+apdu.verboseCommand());
-					System.out.println("CMD "+apdu.toAPDUString());
-				}
+				
+				APDU apdu = APDU.fromCommandAPDU(cmdApdu);
+				apdu.parseResponse(res);
+				TextLog.log("\nREM "+apdu.verboseCommand());
+				TextLog.log("\nCMD "+apdu.toAPDUString());
+				
 				return res;
 				
 			}

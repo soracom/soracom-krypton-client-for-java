@@ -25,17 +25,13 @@ import org.junit.Test;
 public class TestAutoDetectManager {
 
 	public static void main(String[] args) {
-		new AutoDetectManager(true);
+		new AutoDetectManager();
 		System.out.println("end");
 	}
 
 	public static class MockIUiccInterface implements IUiccInterface {
 		String imsi;
 		int wait;
-
-		@Override
-		public void setDebug(boolean debug) {
-		}
 
 		@Override
 		public String readImsi() {
@@ -59,7 +55,7 @@ public class TestAutoDetectManager {
 
 	@Test
 	public void testAutoDetect() {
-		AutoDetectManager manager = new AutoDetectManager(true) {
+		AutoDetectManager manager = new AutoDetectManager() {
 			@Override
 			protected List<InterfaceDetectThread> createThreadList(Callback callback) {
 				List<InterfaceDetectThread> list = new ArrayList<>();

@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 //import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
+import io.soracom.krypton.common.TextLog;
 import io.soracom.krypton.utils.Utilities;
 import jssc.SerialPort;
 import jssc.SerialPortEvent;
@@ -48,7 +49,6 @@ public class CommManager implements IUiccInterface {
 
 	private SerialPort serialPort;
 	private SerialHandler serialHandler;
-	private boolean debug;
 
 	public CommManager() {
 
@@ -59,7 +59,7 @@ public class CommManager implements IUiccInterface {
 	}
 
 	public class SerialHandler implements SerialPortEventListener {
-		
+
 		private int maxResponseWaitTime = 60000; // Wait for a maximum of 60 second for a full response
 		private StringBuilder responseBuffer = new StringBuilder();
 		private String lastCommand;
@@ -87,7 +87,7 @@ public class CommManager implements IUiccInterface {
 
 					// eliminate multiple command echoes in the output stream
 					while (response.contains(lastCommand)) {
-						response = response.replace(lastCommand,"");
+						response = response.replace(lastCommand, "");
 					}
 					responseBuffer = new StringBuilder(response);
 					countDownLatchAwaitForMessageEnd.countDown();
@@ -126,14 +126,14 @@ public class CommManager implements IUiccInterface {
 			if (event.isRXCHAR()) {// If data is available
 				int length = event.getEventValue();// Check bytes count in the input buffer
 
-				log("Received " + Integer.toString(length) + " byte(s)");
+				TextLog.log("Received " + Integer.toString(length) + " byte(s)");
 
 				try {
 					byte buffer[] = serialPort.readBytes(length);
 					if (expectingResponse) {
 						// Sometimes a Command echo is received
 						String response = (new String(buffer, StandardCharsets.US_ASCII));
-						log("Response: " + response);
+						TextLog.log("Response: " + response);
 						responseBuffer.append(response);
 						// Analyse full response for early exit of awaiter
 						response = responseBuffer.toString().trim();
@@ -143,7 +143,7 @@ public class CommManager implements IUiccInterface {
 
 					} else {
 						String lastMessage = (new String(buffer, StandardCharsets.US_ASCII));
-						log("Message: " + lastMessage);
+						TextLog.log("Message: " + lastMessage);
 					}
 				} catch (SerialPortException ex) {
 					ex.printStackTrace();
@@ -205,8 +205,8 @@ public class CommManager implements IUiccInterface {
 	}
 
 	public boolean disconnect() {
-		
-		if(serialHandler != null) {
+
+		if (serialHandler != null) {
 			serialHandler.interrupteAwaiter();
 		}
 
@@ -230,19 +230,11 @@ public class CommManager implements IUiccInterface {
 		if (command == null || command.isEmpty()) {
 			return "";
 		}
-		log("SEND:" + command);
+		TextLog.log("SEND:" + command);
 		serialHandler = new SerialHandler(this.serialPort, true);
 		String result = serialHandler.send(command);
-		log("SEND_RESULT:" + result);
+		TextLog.log("SEND_RESULT:" + result);
 		return result;
-	}
-
-	public boolean isDebug() {
-		return debug;
-	}
-
-	public void setDebug(boolean debug) {
-		this.debug = debug;
 	}
 
 	public String getPortName() {
@@ -458,11 +450,4 @@ public class CommManager implements IUiccInterface {
 			return null;
 		}
 	}
-
-	private void log(String log) {
-		if (debug) {
-			System.out.println(log);
-		}
-	}
-
 }

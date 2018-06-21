@@ -14,65 +14,56 @@
  */
 package io.soracom.krypton.common;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
+import io.soracom.krypton.common.TextLogItem.TextLogItemType;
 
 public class TextLog {
 
-	private List<ITextLogListener> listeners = new ArrayList<ITextLogListener>();
-	
-	private List<TextLogItem> items = new ArrayList<TextLogItem>();
-	
-	public void addListener(ITextLogListener toAdd) {
-        listeners.add(toAdd);
-    }
-	
-	public void removeListener(ITextLogListener toRemove) {
-        listeners.remove(toRemove);
-    }
-	
-	
-	public void add(TextLogItem item){
-		items.add(item);
+	private static final List<ITextLogListener> listeners = new ArrayList<ITextLogListener>();
+
+	static {
+		// default logger
+		listeners.add(new ITextLogListener() {
+			@Override
+			public void itemAdded(TextLogItem item) {
+				System.out.println(item.toString());
+			}
+		});
+	}
+
+	public static void clerListener() {
+		listeners.clear();
+	}
+
+	public static void addListener(ITextLogListener toAdd) {
+		listeners.add(toAdd);
+	}
+
+	public static void removeListener(ITextLogListener toRemove) {
+		listeners.remove(toRemove);
+	}
+
+	public static void log(String message) {
+		add(new TextLogItem(TextLogItemType.LOG, message));
+	}
+
+	public static void warn(String message) {
+		add(new TextLogItem(TextLogItemType.WARN, message));
+	}
+
+	public static void error(String message) {
+		add(new TextLogItem(TextLogItemType.ERR, message));
+	}
+
+	public static void add(TextLogItem item) {
 		itemAdded(item);
 	}
-	
-	public void clear(){
-		items.clear();
-		itemsCleared();
-	}
-	
-	private void itemAdded(TextLogItem item){
-		 for (ITextLogListener hl : listeners){
-	            hl.itemAdded(item);
-	    }
-	}
-	
-	private void itemsCleared(){
-		 for (ITextLogListener hl : listeners){
-	            hl.itemsCleared();
-	    }
-	}
-	
-	public void setItems(List<TextLogItem> value){ items = value; }
-	public List<TextLogItem> getItems(){ return items; }
-	
-	public int size(){
-		if (items!=null) {
-			return items.size();
-		}
-		else{
-			return 0;
-		}
-	}
-	
-	public TextLogItem get(int i){
-		if (items!=null) {
-			return items.get(i);
-		}
-		else{
-			return null;
+
+	private static void itemAdded(TextLogItem item) {
+		for (ITextLogListener hl : listeners) {
+			hl.itemAdded(item);
 		}
 	}
 }

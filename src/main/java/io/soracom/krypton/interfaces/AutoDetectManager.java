@@ -23,13 +23,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.smartcardio.CardTerminal;
 
+import io.soracom.krypton.common.TextLog;
+
 public class AutoDetectManager implements IUiccInterface {
 
 	private IUiccInterface uiccInterfaceImpl;
-	private boolean debug;
 
-	public AutoDetectManager(boolean debug) {
-		this.debug = debug;
+	public AutoDetectManager() {
 		autoDetectUiccInterface();
 	}
 
@@ -41,11 +41,6 @@ public class AutoDetectManager implements IUiccInterface {
 	@Override
 	public String readImsi() {
 		return uiccInterfaceImpl.readImsi();
-	}
-
-	@Override
-	public void setDebug(boolean debug) {
-		uiccInterfaceImpl.setDebug(debug);
 	}
 
 	static class Callback {
@@ -64,7 +59,7 @@ public class AutoDetectManager implements IUiccInterface {
 				synchronized (this) {
 					if (detectedInterfaceThread == null) {
 						detectedInterfaceThread = thread;
-						log("SIM was detected from " + thread.interfaceDescription + " imsi=" + thread.imsi);
+						TextLog.log("SIM was detected from " + thread.interfaceDescription + " imsi=" + thread.imsi);
 						countDownLatch.countDown();
 						return;
 					}
@@ -95,7 +90,7 @@ public class AutoDetectManager implements IUiccInterface {
 			this.interfaceDescription = description;
 			this.callback = callback;
 			callback.incrementalThreadNum();
-			log("detecting SIM from " + interfaceDescription);
+			TextLog.log("detecting SIM from " + interfaceDescription);
 		}
 
 		@Override
@@ -136,7 +131,6 @@ public class AutoDetectManager implements IUiccInterface {
 			List<CardTerminal> readers = Iso7816Manager.listReaders();
 			for (CardTerminal reader : readers) {
 				Iso7816Manager manager = new Iso7816Manager(reader);
-				manager.setDebug(debug);
 				interfaceDetectThreadList.add(new InterfaceDetectThread(manager, "Iso7816 interface", callback));
 			}
 		}
@@ -144,7 +138,6 @@ public class AutoDetectManager implements IUiccInterface {
 			String[] portNames = CommManager.getAvailablePorts();
 			for (String portName : portNames) {
 				CommManager manager = new CommManager();
-				manager.setDebug(debug);
 				manager.setPortName(portName);
 				interfaceDetectThreadList
 						.add(new InterfaceDetectThread(manager, "COM port [" + portName + "]", callback));
@@ -153,7 +146,6 @@ public class AutoDetectManager implements IUiccInterface {
 		{
 			if (MmcliManager.isUnsupportedPlatform() == false) {
 				MmcliManager manager = new MmcliManager();
-				manager.setDebug(debug);
 				interfaceDetectThreadList.add(new InterfaceDetectThread(manager,
 						"mmcli modem index [" + manager.getModemIndex() + "]", callback));
 			}
@@ -164,9 +156,5 @@ public class AutoDetectManager implements IUiccInterface {
 	@Override
 	public boolean disconnect() {
 		return true;
-	}
-
-	private static void log(String log) {
-		System.out.println(log);
 	}
 }
