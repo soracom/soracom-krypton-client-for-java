@@ -24,8 +24,12 @@ import java.util.Random;
 
 import org.json.JSONObject;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+
 import io.soracom.krypton.KryptonClientConfig.CommunicationDeviceConfig;
 import io.soracom.krypton.beans.AppkeyBean;
+import io.soracom.krypton.beans.KeyDistributionBean;
 import io.soracom.krypton.beans.MilenageParamsBean;
 import io.soracom.krypton.common.AuthenticationResponse;
 import io.soracom.krypton.common.AuthenticationResponse.ResultState;
@@ -172,7 +176,7 @@ public class KryptonClient implements ITextLogListener  {
 		String serviceResponse = KryptonAPI.requestService(uri, authResult.ck, authResult.nonce,currentTimeStamp, authResult.keyId, kryptonClientConfig.getKeyLength(), kryptonClientConfig.getKeyAlgorithm(),kryptonClientConfig.getRequestParameters());
 		if (serviceResponse!=null){
 			KeyDistributionBean result = new KeyDistributionBean();
-			result.setServiceProviderResponse(new JSONObject(serviceResponse));
+			result.setServiceProviderResponse(new Gson().fromJson(serviceResponse,JsonObject.class));
 			if (kryptonClientConfig.isApplicationKey()) {
 				byte[] appKey = KryptonAPI.calculateApplicationKey(authResult.nonce, currentTimeStamp, authResult.ck, kryptonClientConfig.getKeyLength(), kryptonClientConfig.getKeyAlgorithm());
 				result.setApplicationKey(Utilities.bytesToBase64(appKey));

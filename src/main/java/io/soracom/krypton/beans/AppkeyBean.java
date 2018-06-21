@@ -29,7 +29,7 @@ public class AppkeyBean {
 	}
 
 	public String toJson() {
-		Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+		Gson gson = new GsonBuilder().disableHtmlEscaping().enableComplexMapKeySerialization().create();
 		return gson.toJson(this);
 	}
 

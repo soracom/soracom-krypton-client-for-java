@@ -12,23 +12,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.soracom.krypton;
-
-import org.json.JSONObject;
+package io.soracom.krypton.beans;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
-import io.soracom.krypton.beans.AppkeyBean;
+import com.google.gson.JsonObject;
 
 public class KeyDistributionBean extends AppkeyBean {
-	private JSONObject serviceProviderResponse;
+	private JsonObject serviceProviderResponse;
 
-	public JSONObject getServiceProviderResponse() {
+	public JsonObject getServiceProviderResponse() {
 		return serviceProviderResponse;
 	}
 
-	public void setServiceProviderResponse(JSONObject serviceProviderResponse) {
+	public void setServiceProviderResponse(JsonObject serviceProviderResponse) {
 		this.serviceProviderResponse = serviceProviderResponse;
 	}
 
