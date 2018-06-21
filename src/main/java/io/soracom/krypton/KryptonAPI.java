@@ -21,7 +21,13 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+
 import javax.net.ssl.HttpsURLConnection;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
 import io.soracom.krypton.beans.AppkeyBean;
 import io.soracom.krypton.beans.KeyRequestBean;
 import io.soracom.krypton.beans.MilenageParamsBean;
@@ -33,9 +39,7 @@ import io.soracom.krypton.common.HttpResponse;
 import io.soracom.krypton.common.ITextLogListener;
 import io.soracom.krypton.common.TextLog;
 import io.soracom.krypton.common.TextLogItem;
-import io.soracom.krypton.utils.Utilities;
-import org.json.JSONException; 
-import org.json.JSONObject; 
+import io.soracom.krypton.utils.Utilities; 
 
 public class KryptonAPI {
 	
@@ -362,21 +366,13 @@ public class KryptonAPI {
 	 * Merge two json strings. Merge "source" into "target". If fields have equal name, merge them recursively. 
 	 * @return the merged object (target). 
 	 */ 
-	private static JSONObject jsonMerge(JSONObject source, JSONObject target) throws JSONException { 
-	    for (String key: JSONObject.getNames(source)) { 
-	            Object value = source.get(key); 
-	            if (!target.has(key)) { 
-	                // new value for "key": 
-	                target.put(key, value); 
-	            } else { 
-	                // existing value for "key" - recursively deep merge: 
-	                if (value instanceof JSONObject) { 
-	                    JSONObject valueJson = (JSONObject)value; 
-	                    jsonMerge(valueJson, target.getJSONObject(key)); 
-	                } else { 
-	                    target.put(key, value); 
-	                } 
-	            } 
+	private static JsonObject jsonMerge(JsonObject source, JsonObject target) { 
+	    for (String key: source.keySet()) { 
+            JsonElement value = source.get(key); 
+            if (!target.has(key)) { 
+                // new value for "key": 
+                target.add(key, value); 
+            }
 	    } 
 	    return target; 
 	} 
@@ -412,8 +408,11 @@ public class KryptonAPI {
 			}
 			else
 			{ 
-				JSONObject jsonResult = jsonMerge(new JSONObject(content.toJson()),new JSONObject(jsonParameters));
-				body = jsonResult.toString();
+				Gson gson = new Gson();
+				JsonObject contentJson = gson.fromJson(content.toJson(), JsonObject.class);
+				JsonObject paramJson = gson.fromJson(jsonParameters, JsonObject.class);
+				JsonObject jsonResult = jsonMerge(contentJson,paramJson);
+				body = gson.toJson(jsonResult);
 			}
  					
 			String sig = calculateSignature(body, timestamp, ck, algorithm);
