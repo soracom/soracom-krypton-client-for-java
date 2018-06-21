@@ -25,7 +25,7 @@ task fatJar(type: Jar) {
 					'Implementation-Version': version,
 					'Main-Class': 'io.soracom.krypton.KryptonClient'
     }
-    baseName = archivesBaseName
+    baseName = archivesBaseName + "-app"
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
 }
