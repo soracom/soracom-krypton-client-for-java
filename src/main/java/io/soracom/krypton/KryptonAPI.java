@@ -49,7 +49,7 @@ public class KryptonAPI {
 	 * @return The full http response object
 	 * @throws Exception
 	 */
-	private static HttpResponse sendPost(String url,String postParameters) throws Exception {
+	private static HttpResponse sendPost(String url,String postParameters) {
 		HttpResponse retVal = new HttpResponse(url);
 		try
 		{
@@ -101,7 +101,7 @@ public class KryptonAPI {
 	 * @return The full http response object
 	 * @throws Exception
 	 */
-	public static HttpResponse postKeyRequest(String url, String body, String timestamp, String algorithm, String signature) throws Exception {
+	public static HttpResponse postKeyRequest(String url, String body, String timestamp, String algorithm, String signature) {
 		
 		HttpResponse retVal = new HttpResponse(url);
 		try

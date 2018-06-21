@@ -12,13 +12,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.soracom.krypton.interfaces;
+package io.soracom.krypton.common;
 
-import io.soracom.krypton.common.KryptonClientRuntimeException;
+public class KryptonClientRuntimeException extends RuntimeException {
 
-public class UiccInterfaceNotFoundException extends KryptonClientRuntimeException {
+	private static final long serialVersionUID = 4046835488834412175L;
 
-	public UiccInterfaceNotFoundException(String message) {
+	public KryptonClientRuntimeException(String message) {
 		super(message);
+	}
+
+	public KryptonClientRuntimeException(Throwable t) {
+		super(t.getMessage(), t);
+	}
+
+	public KryptonClientRuntimeException(String message, Throwable t) {
+		super(message, t);
 	}
 }

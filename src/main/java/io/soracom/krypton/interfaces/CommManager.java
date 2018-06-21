@@ -146,7 +146,6 @@ public class CommManager implements IUiccInterface {
 						TextLog.log("Message: " + lastMessage);
 					}
 				} catch (SerialPortException ex) {
-					ex.printStackTrace();
 					interrupteAwaiter();
 				}
 

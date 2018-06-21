@@ -16,6 +16,7 @@ package io.soracom.krypton;
 
 import java.awt.event.TextListener;
 import java.io.File;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,6 +34,7 @@ import io.soracom.krypton.beans.MilenageParamsBean;
 import io.soracom.krypton.common.AuthenticationResponse;
 import io.soracom.krypton.common.AuthenticationResponse.ResultState;
 import io.soracom.krypton.common.ITextLogListener;
+import io.soracom.krypton.common.KryptonClientRuntimeException;
 import io.soracom.krypton.common.TextLog;
 import io.soracom.krypton.common.TextLogItem;
 import io.soracom.krypton.interfaces.AutoDetectManager;
@@ -159,28 +161,29 @@ public class KryptonClient {
 		System.out.println(message);
 	}
 	
-	protected void init() {
-		
-	}
-
-	public AppkeyBean generateApplicationKey() throws Exception{
+	public AppkeyBean generateApplicationKey() throws KryptonClientRuntimeException{
 		AuthResult authResult = doAuthentication(kryptonClientConfig);
 		long currentTimeStamp = System.currentTimeMillis();
 		
 		//Execute Key Distribution Service Call or Generate Application key by default
 		//Calculate Application key
-		byte[] appKey = KryptonAPI.calculateApplicationKey(authResult.nonce,currentTimeStamp, authResult.ck, kryptonClientConfig.getKeyLength(), kryptonClientConfig.getKeyAlgorithm());
+		byte[] appKey;
+		try {
+			appKey = KryptonAPI.calculateApplicationKey(authResult.nonce,currentTimeStamp, authResult.ck, kryptonClientConfig.getKeyLength(), kryptonClientConfig.getKeyAlgorithm());
+		} catch (NoSuchAlgorithmException e) {
+			throw new KryptonClientRuntimeException(e);
+		}
 		AppkeyBean appKeyBean = new AppkeyBean();
 		appKeyBean.setApplicationKey(Utilities.bytesToBase64(appKey));
 		return appKeyBean;
 	}
 	
-	public KeyDistributionBean invokeKeyDistributionService() throws Exception{
+	public KeyDistributionBean invokeKeyDistributionService() throws KryptonClientRuntimeException{
 		AuthResult authResult = doAuthentication(kryptonClientConfig);
 		long currentTimeStamp = System.currentTimeMillis();
 		
 		if (kryptonClientConfig.getKeyDistributionUrl()==null || kryptonClientConfig.getKeyDistributionUrl().isEmpty()){
-			throw new IllegalArgumentException("KeyDistributionUrl is null");
+			throw new KryptonClientRuntimeException("KeyDistributionUrl is null");
 		}
 		String uri = kryptonClientConfig.getKeyDistributionUrl().replace("{keyid}", authResult.keyId);
 		String serviceResponse = KryptonAPI.requestService(uri, authResult.ck, authResult.nonce,currentTimeStamp, authResult.keyId, kryptonClientConfig.getKeyLength(), kryptonClientConfig.getKeyAlgorithm(),kryptonClientConfig.getRequestParameters());
@@ -188,17 +191,22 @@ public class KryptonClient {
 			KeyDistributionBean result = new KeyDistributionBean();
 			result.setServiceProviderResponse(new Gson().fromJson(serviceResponse,JsonObject.class));
 			if (kryptonClientConfig.isApplicationKey()) {
-				byte[] appKey = KryptonAPI.calculateApplicationKey(authResult.nonce, currentTimeStamp, authResult.ck, kryptonClientConfig.getKeyLength(), kryptonClientConfig.getKeyAlgorithm());
+				byte[] appKey;
+				try {
+					appKey = KryptonAPI.calculateApplicationKey(authResult.nonce, currentTimeStamp, authResult.ck, kryptonClientConfig.getKeyLength(), kryptonClientConfig.getKeyAlgorithm());
+				} catch (NoSuchAlgorithmException e) {
+					throw new KryptonClientRuntimeException(e);
+				}
 				result.setApplicationKey(Utilities.bytesToBase64(appKey));
 			}
 			return result;
 		}else {
-			throw new RuntimeException("Service response is empty.");
+			throw new KryptonClientRuntimeException("Service response is empty.");
 		}
 	}
 	
 	@SuppressWarnings("unchecked")
-	public List<String> listComPorts(){
+	public List<String> listComPorts() throws KryptonClientRuntimeException{
     	String[] ports = CommManager.getAvailablePorts();
     	if (ports==null || ports.length==0){
     		return Collections.EMPTY_LIST;
@@ -206,7 +214,7 @@ public class KryptonClient {
     	return Arrays.asList(ports);
 	}
 	
-	public String getDeviceInfo(){
+	public String getDeviceInfo() throws KryptonClientRuntimeException{
 		CommManager	commManager= createCommManager(kryptonClientConfig.getCommunicationDeviceConfig());
 		return commManager.queryDevice();
 	}
@@ -227,7 +235,7 @@ public class KryptonClient {
 
 		String imsi=uiccInterface.readImsi();
 		if (imsi==null || imsi.isEmpty()){
-			throw new RuntimeException("IMSI not retrieved! Halting key agreement negociation!");
+			throw new KryptonClientRuntimeException("IMSI not retrieved! Halting key agreement negociation!");
 		}
 
 		//Verify if cached key exist
@@ -260,13 +268,13 @@ public class KryptonClient {
 			//First step - Create master key
 			MilenageParamsBean milenageParams = KryptonAPI.initKeyAgreement(kryptonClientConfig.getKeyAgreementUrl(),imsi);
 			if (milenageParams==null || milenageParams.getAutn()==null || milenageParams.getRand()==null){
-				throw new RuntimeException("Error negotiating key agreement for imsi "+((imsi==null)?"":imsi.toString())+"!");
+				throw new KryptonClientRuntimeException("Error negotiating key agreement for imsi "+((imsi==null)?"":imsi.toString())+"!");
 			}
 			authResult.keyId =milenageParams.getKeyId();
 			byte[] rand = Utilities.base64toBytes(milenageParams.getRand());
 			byte[] autn = Utilities.base64toBytes(milenageParams.getAutn());
 			if (autn==null || rand==null){
-				throw new RuntimeException("Bad parameters detected while negotiating key agreement!");
+				throw new KryptonClientRuntimeException("Bad parameters detected while negotiating key agreement!");
 			}
 			byte[] rsp = uiccInterface.authenticate(rand, autn);
 			byte[] res =null;				
@@ -278,7 +286,7 @@ public class KryptonClient {
 						res = authResponse.getRes();
 						authResult.ck = authResponse.getCk();
 						if (authResult.keyId==null){
-							throw new RuntimeException("Key ID is null please try authentication one more time!");
+							throw new KryptonClientRuntimeException("Key ID is null please try authentication one more time!");
 						}
 						if (KryptonAPI.verifyMasterKey(kryptonClientConfig.getKeyAgreementUrl()+"/"+authResult.keyId+"/verify",  Utilities.bytesToBase64(res))){
 							String alias = imsi + "_" +authResult.keyId;//composite alias
@@ -286,7 +294,7 @@ public class KryptonClient {
 						}
 						else
 						{
-							throw new RuntimeException("Could not verify master key!");
+							throw new KryptonClientRuntimeException("Could not verify master key!");
 						}
 						 break;
 					case SynchronisationFailure:
@@ -298,7 +306,7 @@ public class KryptonClient {
 	        			rsp = uiccInterface.authenticate(rand, autn);
 						
 						if (rsp==null){
-							throw new RuntimeException("Failure to authenticate during resynchronization procedure!");
+							throw new KryptonClientRuntimeException("Failure to authenticate during resynchronization procedure!");
 						}
 						else
 						{
@@ -312,18 +320,18 @@ public class KryptonClient {
 	    						}
 	    						else
 	    						{
-	    							throw new RuntimeException("Could not verify master key!");
+	    							throw new KryptonClientRuntimeException("Could not verify master key!");
 	    						}
 							}
 							else
 							{
-								throw new RuntimeException("Unable to resynchronize while negotiating key agreement!");
+								throw new KryptonClientRuntimeException("Unable to resynchronize while negotiating key agreement!");
 							}
 						}
 	
 						break;
 					default:
-						throw new RuntimeException("Authentication failure while negotiating key agreement!");
+						throw new KryptonClientRuntimeException("Authentication failure while negotiating key agreement!");
 				}
 			}
 		}
@@ -350,7 +358,7 @@ public class KryptonClient {
 			return new AutoDetectManager();
 		}
 		default:
-			throw new IllegalArgumentException("Unsupported UiccInterfaceType. type:"+uiccInterfaceType.toString());
+			throw new KryptonClientRuntimeException("Unsupported UiccInterfaceType. type:"+uiccInterfaceType.toString());
 		}
 	}
 		
