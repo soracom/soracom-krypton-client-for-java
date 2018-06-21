@@ -34,7 +34,6 @@ public class MmcliManager implements IUiccInterface {
 
 	private String lastError;
 	private String modemIndex = "0";
-	private String lastCommand;
 	private StringBuilder lastResponse;
 	private String lastMessage;
 	private int maxResponseWaitTime = 60000; // Wait for a maximum of 60 second for a full response
@@ -55,7 +54,6 @@ public class MmcliManager implements IUiccInterface {
 		if (command == null || command.isEmpty()) {
 			return "";
 		}
-		lastCommand = command;
 		if (!command.endsWith("\r\n")) {
 			command += "\r\n"; // Command termination character
 		}

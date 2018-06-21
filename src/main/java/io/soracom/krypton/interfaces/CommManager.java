@@ -309,13 +309,6 @@ public class CommManager implements IUiccInterface {
 	}
 
 	private String targetResponse(String response, String pattern) {
-		/*
-		 * StringBuilder result=new StringBuilder(""); try (BufferedReader reader = new
-		 * BufferedReader(new StringReader(response))) { String line =
-		 * reader.readLine(); while (line != null) { if (line.startsWith(pattern)){
-		 * result.append(line+"\r\n"); } line = reader.readLine(); } } catch
-		 * (IOException exc) { // quit } return result.toString().trim();
-		 */
 
 		int index = response.indexOf(pattern);
 		if (index != -1) // -1 means "not found"

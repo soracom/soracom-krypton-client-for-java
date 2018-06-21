@@ -173,23 +173,6 @@ public class KryptonClient {
 		AppkeyBean appKeyBean = new AppkeyBean();
 		appKeyBean.setApplicationKey(Utilities.bytesToBase64(appKey));
 		return appKeyBean;
-		
-		//Request application key
-		//DEBUG PURPOSES - REMOVE ON PROD 
-		/*
-		String appKeyContents = KryptonAPI.requestService( keyAgreementUrl+"/"+keyId+"/generate_app_key", ck, nonce,currentTimeStamp, keyLength, keyAlgorithm); 
-		if (appKeyContents!=null){
-			//log(appKeyContents);
-			AppkeyBean servAppKeyBean = AppkeyBean.fromJson(appKeyContents);
-			if (servAppKeyBean!=null && servAppKeyBean.getApplicationKey()!=null){
-				byte[] servAppKey = Utilities.base64toBytes(servAppKeyBean.getApplicationKey());
-				if (Utilities.arrayCompare(servAppKey, 0, appKey, 0, appKey.length)==0){
-					log("keys match!");
-				}
-			}
-		}
-		*/
-		//END DEBUG
 	}
 	
 	public KeyDistributionBean invokeKeyDistributionService() throws Exception{
@@ -246,10 +229,7 @@ public class KryptonClient {
 		if (imsi==null || imsi.isEmpty()){
 			throw new RuntimeException("IMSI not retrieved! Halting key agreement negociation!");
 		}
-		//DEBUG
-		//imsi = "900000000000001";
-		//
-		
+
 		//Verify if cached key exist
 		for (String alias:keyCache.listKeyAliases()){
 			if (keyCache.isStillValid(alias)){
