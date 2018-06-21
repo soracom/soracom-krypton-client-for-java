@@ -535,6 +535,7 @@ public class KryptonClient {
 		public void itemAdded(TextLogItem item) {
 			switch (item.getType()){
 	
+				case DEBUG:
 			 	case LOG:
 			 	case WARN:
 			 		if(suppressLogOutput == false) {

@@ -183,8 +183,8 @@ public class Iso7816Manager implements IUiccInterface {
 				
 				APDU apdu = APDU.fromCommandAPDU(cmdApdu);
 				apdu.parseResponse(res);
-				TextLog.log("\nREM "+apdu.verboseCommand());
-				TextLog.log("\nCMD "+apdu.toAPDUString());
+				TextLog.debug("\nREM "+apdu.verboseCommand());
+				TextLog.debug("\nCMD "+apdu.toAPDUString());
 				
 				return res;
 				

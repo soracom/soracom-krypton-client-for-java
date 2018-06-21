@@ -20,7 +20,7 @@ import java.util.Date;
 public class TextLogItem {
 
 	public enum TextLogItemType {
-		LOG, WARN, ERR
+		DEBUG, LOG, WARN, ERR
 	}
 
 	private TextLogItemType type;

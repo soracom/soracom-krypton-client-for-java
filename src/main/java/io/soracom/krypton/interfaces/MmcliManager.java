@@ -58,7 +58,7 @@ public class MmcliManager implements IUiccInterface {
 			command += "\r\n"; // Command termination character
 		}
 
-		TextLog.log("Command: " + command);
+		TextLog.debug("Command: " + command);
 
 		lastResponse = new StringBuilder();
 
@@ -83,7 +83,7 @@ public class MmcliManager implements IUiccInterface {
 
 		Process p;
 		try {
-			TextLog.log("Executing command: " + mmCliCommand.toString());
+			TextLog.debug("Executing command: " + mmCliCommand.toString());
 
 			p = Runtime.getRuntime().exec(mmCliCommand.toString());
 			p.waitFor();
@@ -120,13 +120,13 @@ public class MmcliManager implements IUiccInterface {
 				output.append("ERROR");
 			}
 
-			TextLog.log("response: '" + output.toString() + "'");
+			TextLog.debug("response: '" + output.toString() + "'");
 			if (lastError != null && !lastError.isEmpty()) {
-				TextLog.log("error: '" + lastError + "'");
+				TextLog.debug("error: '" + lastError + "'");
 			}
 
 		} catch (Exception e) {
-			TextLog.log("Error invoking mmcli: " + e.getMessage());
+			TextLog.debug("Error invoking mmcli: " + e.getMessage());
 		}
 		return output.toString();
 

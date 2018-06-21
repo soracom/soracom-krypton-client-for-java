@@ -126,14 +126,14 @@ public class CommManager implements IUiccInterface {
 			if (event.isRXCHAR()) {// If data is available
 				int length = event.getEventValue();// Check bytes count in the input buffer
 
-				TextLog.log("Received " + Integer.toString(length) + " byte(s)");
+				TextLog.debug("Received " + Integer.toString(length) + " byte(s)");
 
 				try {
 					byte buffer[] = serialPort.readBytes(length);
 					if (expectingResponse) {
 						// Sometimes a Command echo is received
 						String response = (new String(buffer, StandardCharsets.US_ASCII));
-						TextLog.log("Response: " + response);
+						TextLog.debug("Response: " + response);
 						responseBuffer.append(response);
 						// Analyse full response for early exit of awaiter
 						response = responseBuffer.toString().trim();
@@ -143,7 +143,7 @@ public class CommManager implements IUiccInterface {
 
 					} else {
 						String lastMessage = (new String(buffer, StandardCharsets.US_ASCII));
-						TextLog.log("Message: " + lastMessage);
+						TextLog.debug("Message: " + lastMessage);
 					}
 				} catch (SerialPortException ex) {
 					interrupteAwaiter();
@@ -229,10 +229,10 @@ public class CommManager implements IUiccInterface {
 		if (command == null || command.isEmpty()) {
 			return "";
 		}
-		TextLog.log("SEND:" + command);
+		TextLog.debug("SEND:" + command);
 		serialHandler = new SerialHandler(this.serialPort, true);
 		String result = serialHandler.send(command);
-		TextLog.log("SEND_RESULT:" + result);
+		TextLog.debug("SEND_RESULT:" + result);
 		return result;
 	}
 

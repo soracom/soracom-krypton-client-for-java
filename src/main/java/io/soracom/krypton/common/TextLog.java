@@ -45,6 +45,10 @@ public class TextLog {
 		listeners.remove(toRemove);
 	}
 
+	public static void debug(String message) {
+		add(new TextLogItem(TextLogItemType.DEBUG, message));
+	}
+	
 	public static void log(String message) {
 		add(new TextLogItem(TextLogItemType.LOG, message));
 	}
