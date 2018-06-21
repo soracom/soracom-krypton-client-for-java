@@ -74,7 +74,7 @@ public class KryptonClient {
 		
 		//System.out.println(getFile("help.txt"));
 		StringBuilder helpText = new StringBuilder();
-		helpText.append("Soracom Krypton Client - Version 0.3.1\r\n");
+		helpText.append("Soracom Krypton Client for Java\r\n");
 
 		helpText.append("\r\n");
 		helpText.append("USAGE: \r\n");
