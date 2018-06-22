@@ -74,7 +74,7 @@ public class KryptonClient {
 		if(kryptonClientConfig.isDisableKeyCache()) {
 			keyCache = new NoOpKeyCache();
 		}else {
-			keyCache = new JCEKeyCache(System.getProperty("user.home")+ File.separator + ".kryptonKeyCache");
+			keyCache = new JCEKeyCache(System.getProperty("user.home")+ File.separator + ".soracom-krypton-jce");
 			if(kryptonClientConfig.isClearKeyCache()) {
 				clearKeyCache();
 			}
