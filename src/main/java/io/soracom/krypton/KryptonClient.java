@@ -14,7 +14,6 @@
  */
 package io.soracom.krypton;
 
-import java.awt.event.TextListener;
 import java.io.File;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -43,21 +42,24 @@ import io.soracom.krypton.interfaces.IUiccInterface;
 import io.soracom.krypton.interfaces.Iso7816Manager;
 import io.soracom.krypton.interfaces.MmcliManager;
 import io.soracom.krypton.interfaces.UiccInterfaceType;
+import io.soracom.krypton.keycache.JCEKeyCache;
+import io.soracom.krypton.keycache.KeyCache;
+import io.soracom.krypton.keycache.NoOpKeyCache;
 import io.soracom.krypton.utils.Utilities;
 
 public class KryptonClient {
 
-	private static KeyCache keyCache = new KeyCache(System.getProperty("user.home")+ File.separator + ".kcache");
+	private KeyCache keyCache;
 	
 	private KryptonClientConfig kryptonClientConfig;
 	
 	public KryptonClient(KryptonClientConfig kryptonClientConfig) {
-		this.kryptonClientConfig = kryptonClientConfig;
-		initLogger(null);
+		this(kryptonClientConfig,null);
 	}
 	public KryptonClient(KryptonClientConfig kryptonClientConfig, ITextLogListener logListener) {
 		this.kryptonClientConfig = kryptonClientConfig;
 		initLogger(logListener);
+		initKeyCache();
 	}
 	
 	private void initLogger(ITextLogListener logListener) {
@@ -66,6 +68,17 @@ public class KryptonClient {
 		}
 		TextLog.clerListener();
 		TextLog.addListener(logListener);
+	}
+	
+	private void initKeyCache() {
+		if(kryptonClientConfig.isDisableKeyCache()) {
+			keyCache = new NoOpKeyCache();
+		}else {
+			keyCache = new JCEKeyCache(System.getProperty("user.home")+ File.separator + ".kryptonKeyCache");
+			if(kryptonClientConfig.isClearKeyCache()) {
+				clearKeyCache();
+			}
+		}
 	}
 	
 	public enum RunLevel {
@@ -116,7 +129,8 @@ public class KryptonClient {
 		helpText.append("  --deviceInfo    	Query the Communication device and print the information\r\n");
 		helpText.append("  --endorse	   	Set the key URL to consume Soracom Endorse service (to get JWT token)\r\n");
 		helpText.append("  --applicationKey	Output applicationKey\r\n");
-		helpText.append("  --clearCache	   	Clear key cache\r\n");
+		helpText.append("  --disableKeyCache		Disable key cache.If you want to set a encryption key of the keystore, please set a value as environment variable " + KeyCache.ENV_NAME_KRYPTON_KEY_STORE_KEY+"\r\n");
+		helpText.append("  --clearKeyCache	Clear key cache\r\n");
 		helpText.append("  --debug		   	Set debug mode on\r\n");
 		helpText.append("  --help          	Display this help message and stop\r\n");
 		helpText.append("\r\n");
@@ -219,18 +233,17 @@ public class KryptonClient {
 		return commManager.queryDevice();
 	}
 	
-	public void clearCache() {
+	public void clearKeyCache() {
 		keyCache.clear();
 		TextLog.log("key cache has been cleared.");
 	}
 	
-	private static class AuthResult{
-		byte[] nonce;
-		byte[] ck =null;
-		String keyId;
+	public static class AuthResult{
+		public byte[] nonce;
+		public byte[] ck =null;
+		public String keyId;
 	}
 	protected AuthResult doAuthentication(KryptonClientConfig kryptonClientConfig) {
-		AuthResult authResult = new AuthResult();
 		IUiccInterface uiccInterface = createUiccInterface(kryptonClientConfig);
 
 		String imsi=uiccInterface.readImsi();
@@ -239,30 +252,11 @@ public class KryptonClient {
 		}
 
 		//Verify if cached key exist
-		for (String alias:keyCache.listKeyAliases()){
-			if (keyCache.isStillValid(alias)){
-				if (alias.startsWith(imsi)){
-					String[] aliasParts = alias.split("_");//Used since introduction of a composite alias
-					if (aliasParts.length>1){
-						authResult.keyId = aliasParts[1]; //Key ID is second part
-						authResult.ck=keyCache.getKeyBytes(alias);
-						TextLog.log("retrieve keyId and ck from key cache. keyId=" + authResult.keyId);
-						break;
-					}
-					else
-					{
-						keyCache.unsetKey(alias);
-					}
-				}
-				else{
-					keyCache.unsetKey(alias);
-				}
-			}
-			else
-			{
-				keyCache.unsetKey(alias);
-			}
+		AuthResult authResult = keyCache.getAuthResultFromCache(imsi);
+		if(authResult == null) {
+			authResult = new AuthResult();
 		}
+
 		if (authResult.ck==null) //Key cache did not return a key, proceed with authentication
 		{
 			//First step - Create master key
@@ -477,6 +471,13 @@ public class KryptonClient {
 				communicationDeviceConfig.setModemIndex( Integer.toString(modemIntex));
 			}
 			kryptonClientConfig.setCommunicationDeviceConfig(communicationDeviceConfig);
+			
+    		if (doubleOptsList.contains("clearCache")||doubleOptsList.contains("clearKeyCache")){
+    			kryptonClientConfig.setClearKeyCache(true);
+    		}
+    		if (doubleOptsList.contains("disableKeyCache")){
+    			kryptonClientConfig.setDisableKeyCache(true);
+    		}
        }
 	   catch (Exception ex){
 		   TextLog.error("Illegal argument: "+ex.getMessage());
@@ -508,9 +509,6 @@ public class KryptonClient {
 	        
 	    	}
 	        KryptonClient client= new KryptonClient(kryptonClientConfig);
-    		if (doubleOptsList.contains("clearCache")){
-    			client.clearCache();
-    		}
 	        client.start(runLevel);
 	        System.exit(0);
        }

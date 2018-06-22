@@ -32,7 +32,8 @@ public class KryptonClientConfig {
 	private String keyAlgorithm = "SHA-256";
 	private boolean debug = false;
 	private boolean applicationKey = false;
-	private boolean clearCache;
+	private boolean clearKeyCache = false;
+	private boolean disableKeyCache = false;
 
 	public static class CommunicationDeviceConfig {
 
@@ -158,12 +159,20 @@ public class KryptonClientConfig {
 		this.applicationKey = applicationKey;
 	}
 	
-	public void setClearCache(boolean clearCache) {
-		this.clearCache = clearCache;
+	public void setClearKeyCache(boolean clearKeyCache) {
+		this.clearKeyCache = clearKeyCache;
 	}
 	
-	public boolean isClearCache() {
-		return clearCache;
+	public boolean isClearKeyCache() {
+		return clearKeyCache;
+	}
+	
+	public boolean isDisableKeyCache() {
+		return disableKeyCache;
+	}
+	
+	public void setDisableKeyCache(boolean disableKeyCache) {
+		this.disableKeyCache = disableKeyCache;
 	}
 
 	public CommunicationDeviceConfig getCommunicationDeviceConfig() {

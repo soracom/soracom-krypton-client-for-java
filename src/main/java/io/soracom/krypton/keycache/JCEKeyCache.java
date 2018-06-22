@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.soracom.krypton;
+package io.soracom.krypton.keycache;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,21 +26,52 @@ import java.util.Enumeration;
 
 import javax.crypto.spec.SecretKeySpec;
 
+import io.soracom.krypton.KryptonClient.AuthResult;
+import io.soracom.krypton.common.TextLog;
+
 /**
  * A class to manage the Java Cryptography Extension KeyStore with concept of validity for the keys
  * @author olivier.comarmond
  *
  */
-public class KeyCache {
-	private static final char[] protection = "!_S0r4C0m_&".toCharArray();
+public class JCEKeyCache implements KeyCache{
+	private char[] protection;
 	private String path;
 	private static final String defaultAlgo = "AES";
 	private KeyStore store;
 	private long validity=3600000L; //milliseconds
 	
 	
-	public KeyCache(String path){
+	public JCEKeyCache(String path){
 		initKeyStore(path);
+	}
+	
+	public AuthResult getAuthResultFromCache(String imsi) {
+		//Verify if cached key exist
+		for (String alias:listKeyAliases()){
+			if (isStillValid(alias)){
+				if (alias.startsWith(imsi)){
+					String[] aliasParts = alias.split("_");//Used since introduction of a composite alias
+					if (aliasParts.length>1){
+						AuthResult authResult = new AuthResult();
+						authResult.keyId = aliasParts[1]; //Key ID is second part
+						authResult.ck=getKeyBytes(alias);
+						TextLog.log("retrieve keyId and ck from key cache. keyId=" + authResult.keyId);
+						return authResult;
+					}
+					else{
+						unsetKey(alias);
+					}
+				}
+				else{
+					unsetKey(alias);
+				}
+			}
+			else{
+				unsetKey(alias);
+			}
+		}
+		return null;
 	}
 	
 	public boolean isStillValid(String alias){
@@ -56,6 +87,20 @@ public class KeyCache {
 	}
 	
 	public void initKeyStore(String path) {
+		//load key store key from environment 
+		String keyStoreKey = System.getenv(ENV_NAME_KRYPTON_KEY_STORE_KEY);
+		if(keyStoreKey != null) {
+			TextLog.debug("set key store encryption key from env");
+		}else {
+			keyStoreKey = System.getProperty(ENV_NAME_KRYPTON_KEY_STORE_KEY);
+			if(keyStoreKey != null) {
+				TextLog.debug("set key store encryption key from system property");
+			}else {
+				keyStoreKey = "!_S0r4C0m_&";
+				TextLog.debug("set default key store encryption key");
+			}
+		}
+		protection = keyStoreKey.toCharArray();
 		try{
 			this.path = path;
 		    File file = new File(path);
