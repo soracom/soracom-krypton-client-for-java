@@ -190,7 +190,8 @@ public class KryptonAPI {
 				TextLog.error("While calling key agreement URL "+url+", received http response: "+ Integer.toString(response.getCode()));
 				if (response.getContents()!=null && !response.getContents().isEmpty()){
 					TextLog.error("Body: "+ response.getContents());	
-				}					
+				}
+				return null;
 			}
 			return retVal;
 		}
@@ -347,7 +348,6 @@ public class KryptonAPI {
 	public static String requestService( String url, byte[] ck,  byte[] nonce, long timestamp, String keyId, int keyLength,  String algorithm, String jsonParameters){
 		
 		try{
-			String retVal = "";
 			KeyRequestBean content = new KeyRequestBean();
 			content.setNonce(Utilities.bytesToBase64(nonce));
 			content.setKeyId(keyId);
@@ -372,7 +372,8 @@ public class KryptonAPI {
 			String sig = calculateSignature(body, timestamp, ck, algorithm);
 			HttpResponse response = postKeyRequest(url, body, content.getTimestamp(), content.getAlgorithm(), sig);
 			if (response.getCode()==200 && response.getContents()!=null){
-				retVal = response.getContents();
+				String retVal = response.getContents();
+				return retVal;
 			}
 			else
 			{
@@ -380,8 +381,8 @@ public class KryptonAPI {
 				if (response.getContents()!=null && !response.getContents().isEmpty()){
 					TextLog.error("Body: "+ response.getContents());	
 				}
+				return null;
 			}
-			return retVal;
 		}
 		catch (Exception ex){
 			TextLog.error(ex.getMessage());
