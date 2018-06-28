@@ -28,6 +28,7 @@ dependencies {
    // Java Simple Serial Connector 
     compile 'org.scream3r:jssc:2.8.0'
     compile 'com.google.code.gson:gson:2.8.2'
+    compile 'io.soracom:soracom-endorse-client-for-java:0.1.0-SNAPSHOT'
     testCompile 'junit:junit:4.12'
 }
 

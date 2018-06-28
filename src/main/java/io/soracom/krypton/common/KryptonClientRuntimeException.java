@@ -16,7 +16,7 @@ package io.soracom.krypton.common;
 
 public class KryptonClientRuntimeException extends RuntimeException {
 
-	private static final long serialVersionUID = 4046835488834412175L;
+	private static final long serialVersionUID = 6227083818376733442L;
 
 	public KryptonClientRuntimeException(String message) {
 		super(message);
@@ -28,5 +28,15 @@ public class KryptonClientRuntimeException extends RuntimeException {
 
 	public KryptonClientRuntimeException(String message, Throwable t) {
 		super(message, t);
+	}
+
+	@Override
+	public String getMessage() {
+		String message = super.getMessage();
+		Throwable t = getCause();
+		if (t != null) {
+			message += " cause:" + t.getMessage();
+		}
+		return message;
 	}
 }

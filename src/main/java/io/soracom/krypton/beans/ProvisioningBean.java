@@ -17,29 +17,29 @@ package io.soracom.krypton.beans;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-public class NonceBean {
-	private String nonce;
-	
-	public String getNonce() {
-		return nonce;
+public class ProvisioningBean {
+	private String applicationKey;
+
+	private String serviceProviderResponse;
+
+	public String getApplicationKey() {
+		return applicationKey;
 	}
 
-	public void setNonce(String nonce) {
-		this.nonce = nonce;
+	public void setApplicationKey(String applicationKey) {
+		this.applicationKey = applicationKey;
 	}
 
-	public String toJson(){
-		Gson gson = new GsonBuilder().disableHtmlEscaping().create();
-		return gson.toJson(this);
+	public String getServiceProviderResponse() {
+		return serviceProviderResponse;
 	}
-	
-	public static NonceBean fromJson(String json){
-		
-		Gson gson = new GsonBuilder().disableHtmlEscaping().create();
-		return gson.fromJson(json, NonceBean.class);
+
+	public void setServiceProviderResponse(String serviceProviderResponse) {
+		this.serviceProviderResponse = serviceProviderResponse;
 	}
-	
-	public boolean isEmpty(){
-		return (nonce==null);
+
+	public static ProvisioningBean fromJson(String json) {
+		Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+		return gson.fromJson(json, ProvisioningBean.class);
 	}
 }
