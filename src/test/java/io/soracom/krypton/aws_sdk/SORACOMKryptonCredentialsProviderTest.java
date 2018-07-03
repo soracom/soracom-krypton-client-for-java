@@ -14,10 +14,12 @@ public class SORACOMKryptonCredentialsProviderTest {
 	@Test
 	public void testS3Access() throws Exception {
 
-		SORACOMKryptonCredentialsProvider credentialProvider = new SORACOMKryptonCredentialsProvider();
-		AmazonS3 s3 = new AmazonS3Client(credentialProvider);
+		SORACOMKryptonCredentialsProvider credentialProvider = SORACOMKryptonCredentialsProvider.build();
+		AmazonS3 s3Client = new AmazonS3Client(credentialProvider);
 
-		ObjectListing listObjects = s3.listObjects("krypton-cognito-demo");
+		String s3Bucket = credentialProvider.getSoracomKryptonClient().getUserdata();
+
+		ObjectListing listObjects = s3Client.listObjects(s3Bucket);
 		List<S3ObjectSummary> objectSummaries = listObjects.getObjectSummaries();
 		for (S3ObjectSummary s : objectSummaries) {
 			System.out.println(s.getKey());

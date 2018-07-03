@@ -23,7 +23,6 @@ import com.amazonaws.services.securitytoken.model.GetSessionTokenRequest;
 import com.amazonaws.services.securitytoken.model.GetSessionTokenResult;
 
 import io.soracom.krypton.SORACOMKryptonClient;
-import io.soracom.krypton.SORACOMKryptonClientConfig;
 import io.soracom.krypton.beans.GenerateAmazonCognitoSessionCredentialsResult;
 
 /**
@@ -33,25 +32,38 @@ import io.soracom.krypton.beans.GenerateAmazonCognitoSessionCredentialsResult;
  *
  */
 public class SORACOMKryptonCredentialsProvider extends STSSessionCredentialsProvider {
+	private SORACOMKryptonClient soracomKryptonClient;
 
 	public SORACOMKryptonCredentialsProvider() {
-		super(new KryptonAWSSecurityTokenService(new SORACOMKryptonClientConfig()));
+		this(new SORACOMKryptonClient());
 	}
 
-	public SORACOMKryptonCredentialsProvider(SORACOMKryptonClientConfig config) {
-		super(new KryptonAWSSecurityTokenService(config));
+	public SORACOMKryptonCredentialsProvider(SORACOMKryptonClient client) {
+		super(new KryptonAWSSecurityTokenService(client));
+		this.soracomKryptonClient = client;
+	}
+
+	public static SORACOMKryptonCredentialsProvider build() {
+		return new SORACOMKryptonCredentialsProvider();
+	}
+
+	public static SORACOMKryptonCredentialsProvider build(SORACOMKryptonClient client) {
+		return new SORACOMKryptonCredentialsProvider(client);
+	}
+
+	public SORACOMKryptonClient getSoracomKryptonClient() {
+		return soracomKryptonClient;
 	}
 
 	private static class KryptonAWSSecurityTokenService extends AbstractAWSSecurityTokenService {
-		SORACOMKryptonClient client;
+		private SORACOMKryptonClient client;
 
-		private KryptonAWSSecurityTokenService(SORACOMKryptonClientConfig config) {
-			client = new SORACOMKryptonClient(config);
+		private KryptonAWSSecurityTokenService(SORACOMKryptonClient client) {
+			this.client = client;
 		}
 
 		@Override
 		public GetSessionTokenResult getSessionToken(GetSessionTokenRequest request) {
-
 			GenerateAmazonCognitoSessionCredentialsResult generateResult = client
 					.generateAmazonCognitoSessionCredentials();
 			GetSessionTokenResult result = new GetSessionTokenResult();

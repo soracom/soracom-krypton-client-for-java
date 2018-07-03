@@ -33,13 +33,16 @@ import io.soracom.krypton.beans.BootstrapInventoryDeviceResult;
 import io.soracom.krypton.beans.GenerateAmazonCognitoOpenIdTokenResult;
 import io.soracom.krypton.beans.GenerateAmazonCognitoSessionCredentialsResult;
 import io.soracom.krypton.beans.GetSubscriberMetadataResult;
-import io.soracom.krypton.beans.GetUserdataResult;
 import io.soracom.krypton.beans.ProvisioningBean;
 import io.soracom.krypton.common.KryptonClientRuntimeException;
 
 public class SORACOMKryptonClient {
 
 	private SORACOMKryptonClientConfig kryptonClientConfig;
+
+	public SORACOMKryptonClient() {
+		this(new SORACOMKryptonClientConfig());
+	}
 
 	public SORACOMKryptonClient(SORACOMKryptonClientConfig kryptonClientConfig) {
 		this(kryptonClientConfig, null);
@@ -84,15 +87,13 @@ public class SORACOMKryptonClient {
 		return result;
 	}
 
-	public GetUserdataResult getUserdata() {
+	public String getUserdata() {
 		TrustedEntityRequst request = new TrustedEntityRequst();
 		request.apiEndpointUrl = ProvisioningApiEndpoint.getUserdata(kryptonClientConfig.getApiEndpointUrl());
 
 		ProvisioningBean invokeProvisioingApiResult = invokeProvisioningApi(request, false);
 
-		GetUserdataResult result = new GetUserdataResult();
-		result.setUserData(invokeProvisioingApiResult.getServiceProviderResponse());
-		return result;
+		return invokeProvisioingApiResult.getServiceProviderResponse();
 	}
 
 	public GetSubscriberMetadataResult getSubscriberMetadata() {

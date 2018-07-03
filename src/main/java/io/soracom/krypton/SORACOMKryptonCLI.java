@@ -173,6 +173,8 @@ public class SORACOMKryptonCLI {
 					}
 					if (result instanceof CLIOutput) {
 						System.out.println(((CLIOutput) result).toCLIOutput());
+					} else if (result instanceof String) {
+						System.out.println(result);
 					} else {
 						System.out.println(Utilities.toJson(result));
 					}

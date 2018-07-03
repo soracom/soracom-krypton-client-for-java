@@ -4,10 +4,8 @@ import org.apache.commons.cli.Option;
 
 import io.soracom.krypton.SORACOMKryptonClient;
 import io.soracom.krypton.SORACOMKryptonClientConfig;
-import io.soracom.krypton.beans.GetSubscriberMetadataResult;
-import io.soracom.krypton.beans.GetUserdataResult;
 
-public class GetUserdataOptionHandler implements KryptonOptionHandler<GetUserdataResult> {
+public class GetUserdataOptionHandler implements KryptonOptionHandler<String> {
 
 	@Override
 	public Option getOption() {
@@ -16,10 +14,9 @@ public class GetUserdataOptionHandler implements KryptonOptionHandler<GetUserdat
 	}
 
 	@Override
-	public GetUserdataResult invoke(SORACOMKryptonClientConfig kryptonClientConfig, String requestParamJson) {
+	public String invoke(SORACOMKryptonClientConfig kryptonClientConfig, String requestParamJson) {
 		SORACOMKryptonClient client = new SORACOMKryptonClient(kryptonClientConfig);
-		GetUserdataResult result = client.getUserdata();
-		return result;
+		return client.getUserdata();
 	}
 
 }
