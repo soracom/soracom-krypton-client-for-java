@@ -68,14 +68,11 @@ public class SORACOMKryptonCLI {
 
 	private static Options initOptions() {
 		final Options options = new Options();
-		options.addOption(KryptonCLIOptions.provisioningApiEndpointUrlOption);
-		options.addOption(KryptonCLIOptions.requestParameterOption);
 		// add provisioing APIs
 		for (KryptonOptionHandler<?> provisioningApiHandler : kryptonOptionHanderList) {
 			options.addOption(provisioningApiHandler.getOption());
 		}
-
-		options.addOption(EndorseCLIOptions.keysEndpointUrlOption);
+		options.addOption(KryptonCLIOptions.requestParameterOption);
 		options.addOption(EndorseCLIOptions.interfaceOption);
 		options.addOption(EndorseCLIOptions.portNameOption);
 		options.addOption(EndorseCLIOptions.baudRateOption);
@@ -83,6 +80,8 @@ public class SORACOMKryptonCLI {
 		options.addOption(EndorseCLIOptions.stopBitOption);
 		options.addOption(EndorseCLIOptions.parityBitOption);
 		options.addOption(EndorseCLIOptions.modemManagerIndexOption);
+		options.addOption(KryptonCLIOptions.provisioningApiEndpointUrlOption);
+		options.addOption(EndorseCLIOptions.keysEndpointUrlOption);
 
 		options.addOption(EndorseCLIOptions.listComPortsOption);
 		options.addOption(EndorseCLIOptions.deviceInfoOption);
@@ -110,7 +109,7 @@ public class SORACOMKryptonCLI {
 		helpText.append("soracom-krypton --generateAmazonCognitoSessionCredentials \r\n");
 		helpText.append("\r\n");
 		helpText.append("To invoke execute bootstrapInventoryDevice using card reader:\r\n");
-		helpText.append("soracom-krypton -- bootstrapInventoryDevice -if iso7816 \r\n");
+		helpText.append("soracom-krypton --bootstrapInventoryDevice -if iso7816 \r\n");
 		helpText.append("\r\n");
 
 		formatter.printHelp("soracom-krypton --provisioningAPIname [-if interface] [--help] [--debug]",
@@ -118,7 +117,7 @@ public class SORACOMKryptonCLI {
 	}
 
 	private static void displayVersion() {
-		List<String> lines = Utilities.readResource("/soracom-inventory-version");
+		List<String> lines = Utilities.readResource("/soracom-krypton-version");
 		for (String line : lines) {
 			System.out.println(line);
 		}

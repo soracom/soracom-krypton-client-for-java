@@ -8,6 +8,7 @@ apply plugin: 'eclipse'
 apply plugin: 'application'
 apply plugin: 'maven'
 apply plugin: 'maven-publish'
+apply plugin: 'distribution'
 
 
 repositories {
@@ -17,8 +18,9 @@ repositories {
 }
 
 group = 'io.soracom'
-mainClassName = 'io.soracom.krypton.KryptonClient'
+mainClassName = 'io.soracom.krypton.SORACOMKryptonCLI'
 archivesBaseName = rootProject.name
+
 version = '0.0.4-SNAPSHOT' 
 
 sourceCompatibility = 1.7
@@ -29,6 +31,7 @@ dependencies {
     compile 'org.scream3r:jssc:2.8.0'
     compile 'com.google.code.gson:gson:2.8.2'
     compile 'io.soracom:soracom-endorse-client-for-java:0.1.0-SNAPSHOT'
+    compileOnly group: 'com.amazonaws', name: 'aws-java-sdk-sts', version: '1.11.358'
     testCompile 'junit:junit:4.12'
 }
 
@@ -36,11 +39,33 @@ task fatJar(type: Jar) {
 	manifest {
 	    attributes 'Implementation-Title': archivesBaseName,
 					'Implementation-Version': version,
-					'Main-Class': 'io.soracom.krypton.KryptonClient'
+					'Main-Class': mainClassName
     }
-    baseName = archivesBaseName + "-app"
+    archiveName="soracom-krypton.jar"
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
+}
+
+jar {
+    manifest {
+        attributes "Implementation-Title": archivesBaseName,
+            		"Implementation-Version": version,
+            		"Main-Class": mainClassName
+    }
+}
+//batch command
+startScripts {
+    applicationName = 'soracom-krypton'
+}
+//distribution archive name
+distributions {
+    main {
+        baseName = 'soracom-krypton-cli'
+    }
+}
+
+task generateVersionText()  {
+    new File("src/main/resources/soracom-krypton-version").text = """Version: $version"""
 }
 
 task sourceJar(type: Jar) {
@@ -77,11 +102,9 @@ gitPublish {
     commitMessage = 'Publishing a new archive'
 }
 
-task preparePush {
-    subprojects.each { dependsOn("${it.name}:clean") }
-    subprojects.each { dependsOn("${it.name}:build") }
-    subprojects.each { dependsOn("${it.name}:publish") }
-}
-gitPublishPush.dependsOn preparePush
+gitPublishPush.dependsOn build
 
-build.dependsOn fatJar
+build.dependsOn generateVersionText
+task dist(){
+}
+dist.dependsOn fatJar,distZip
