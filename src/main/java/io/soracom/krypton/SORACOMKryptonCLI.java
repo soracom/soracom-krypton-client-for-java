@@ -28,6 +28,7 @@ import org.apache.commons.cli.ParseException;
 
 import io.soracom.endorse.SORACOMEndorseCLI;
 import io.soracom.endorse.SORACOMEndorseCLI.EndorseCLIOptions;
+import io.soracom.endorse.SORACOMEndorseClient;
 import io.soracom.endorse.SORACOMEndorseClientConfig;
 import io.soracom.endorse.common.TextLog;
 import io.soracom.endorse.utils.Utilities;
@@ -137,47 +138,65 @@ public class SORACOMKryptonCLI {
 	public static void main(String[] args) {
 		Options options = initOptions();
 
-		CommandLine line = null;
+		CommandLine commandLine = null;
 		try {
 			CommandLineParser parser = new DefaultParser();
-			line = parser.parse(options, args);
+			commandLine = parser.parse(options, args);
 		} catch (ParseException exp) {
 			displayHelp(options);
 			System.exit(-1);
 		}
-		if (line.hasOption(EndorseCLIOptions.helpOption.getLongOpt())) {
+		if (commandLine.hasOption(EndorseCLIOptions.helpOption.getLongOpt())) {
 			displayHelp(options);
 			System.exit(0);
 		}
-		if (line.hasOption(EndorseCLIOptions.versionOption.getLongOpt())) {
+		if (commandLine.hasOption(EndorseCLIOptions.versionOption.getLongOpt())) {
 			displayVersion();
 			System.exit(0);
 		}
 
-		SORACOMEndorseClientConfig clientConfig = SORACOMEndorseCLI.createSORACOMEndorseClientConfig(line);
-		SORACOMKryptonClientConfig kryptonClientConfig = new SORACOMKryptonClientConfig();
+		final SORACOMEndorseClientConfig endorseClientConfig = SORACOMEndorseCLI
+				.createSORACOMEndorseClientConfig(commandLine);
+		final SORACOMKryptonClientConfig kryptonClientConfig = new SORACOMKryptonClientConfig();
 
-		if (line.hasOption(KryptonCLIOptions.debugOption.getLongOpt())) {
-			clientConfig.setDebug(true);
+		if (commandLine.hasOption(KryptonCLIOptions.debugOption.getLongOpt())) {
+			endorseClientConfig.setDebug(true);
 			kryptonClientConfig.setDebug(true);
 		}
 
-		kryptonClientConfig.setEndorseClientConfig(clientConfig);
-
-		if (line.hasOption(KryptonCLIOptions.provisioningApiEndpointUrlOption.getLongOpt())) {
-			String apiEndpointUrl = line
+		if (commandLine.hasOption(KryptonCLIOptions.provisioningApiEndpointUrlOption.getLongOpt())) {
+			String apiEndpointUrl = commandLine
 					.getOptionValue(KryptonCLIOptions.provisioningApiEndpointUrlOption.getLongOpt());
 			kryptonClientConfig.setApiEndpointUrl(apiEndpointUrl);
 		}
 
+		kryptonClientConfig.setEndorseClientConfig(endorseClientConfig);
+
+		if (commandLine.hasOption(EndorseCLIOptions.listComPortsOption.getLongOpt())) {
+			SORACOMEndorseClient client = new SORACOMEndorseClient(endorseClientConfig);
+			List<String> ports = client.listComPorts();
+			if (ports.size() == 0) {
+				System.out.println("No serial ports detected!");
+			}
+			for (String port : ports) {
+				System.out.println(port);
+			}
+			System.exit(0);
+		}
+		if (commandLine.hasOption(EndorseCLIOptions.deviceInfoOption.getLongOpt())) {
+			SORACOMEndorseClient client = new SORACOMEndorseClient(endorseClientConfig);
+			System.out.println(client.getDeviceInfo());
+			System.exit(0);
+		}
+
 		try {
 			String paramJson = null;
-			if (line.hasOption(KryptonCLIOptions.requestParameterOption.getLongOpt())) {
-				paramJson = line.getOptionValue(KryptonCLIOptions.requestParameterOption.getLongOpt());
+			if (commandLine.hasOption(KryptonCLIOptions.requestParameterOption.getLongOpt())) {
+				paramJson = commandLine.getOptionValue(KryptonCLIOptions.requestParameterOption.getLongOpt());
 			}
 
-			if (line.hasOption(KryptonCLIOptions.execOption.getLongOpt())) {
-				String execName = line.getOptionValue(KryptonCLIOptions.execOption.getLongOpt()).toLowerCase();
+			if (commandLine.hasOption(KryptonCLIOptions.execOption.getLongOpt())) {
+				String execName = commandLine.getOptionValue(KryptonCLIOptions.execOption.getLongOpt()).toLowerCase();
 				for (KryptonOperationHandler<?> provisioningApiHandler : kryptonOptionHanderList) {
 					OperationInfo info = provisioningApiHandler.getOperationInfo();
 					if (info.getOperation().toLowerCase().equals(execName)) {
