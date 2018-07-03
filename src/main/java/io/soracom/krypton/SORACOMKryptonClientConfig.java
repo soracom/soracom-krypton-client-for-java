@@ -25,7 +25,7 @@ import io.soracom.endorse.SORACOMEndorseClientConfig;
 public class SORACOMKryptonClientConfig {
 
 	private String apiEndpointUrl = ProvisioningApiEndpoint.getDefault().getApiEndpoint();
-	private SORACOMEndorseClientConfig endorseClientConfig;
+	private SORACOMEndorseClientConfig endorseClientConfig = new SORACOMEndorseClientConfig();
 	private boolean debug = false;
 
 	public String getApiEndpointUrl() {

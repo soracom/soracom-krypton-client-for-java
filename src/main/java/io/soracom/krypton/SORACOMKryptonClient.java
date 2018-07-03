@@ -15,6 +15,7 @@
 package io.soracom.krypton;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import io.soracom.endorse.EndorseAPI;
@@ -148,13 +149,37 @@ public class SORACOMKryptonClient {
 			ProvisioningBean result = new ProvisioningBean();
 			result.setServiceProviderResponse(serviceResponse);
 			if (requiredApplicationKey) {
-				// , result.getNonce() != null
-				// TODO
-				// validateApplicationKey(result, currentTimeStamp, authResult.ck);
+				JsonObject jsonObject = Utilities.fromJson(serviceResponse, JsonObject.class);
+				String appKey = getJsonAttribute(jsonObject, "applicationKey");
+				if (appKey == null) {
+					String nonce = getJsonAttribute(jsonObject, "nonce");
+					String timestamp = getJsonAttribute(jsonObject, "timestamp");
+					if (nonce == null) {
+						throw new KryptonClientRuntimeException("nonce is null.");
+					}
+					if (timestamp == null) {
+						throw new KryptonClientRuntimeException("timestamp is null.");
+					}
+					appKey = endorseClient.calculateApplicationKey(Utilities.base64toBytes(nonce),
+							Long.valueOf(timestamp), authResult.ckBytes());
+					TextLog.log("application key is calculated.");
+				} else {
+					TextLog.log("application key from http response.");
+				}
+				result.setApplicationKey(appKey);
 			}
 			return result;
 		} catch (HttpRequestException e) {
 			throw new KryptonClientRuntimeException("failed to invoke provisioning api.", e);
+		}
+	}
+
+	protected String getJsonAttribute(JsonObject jsonObject, String attributeName) {
+		JsonElement jsonElement = jsonObject.get(attributeName);
+		if (jsonElement == null) {
+			return null;
+		} else {
+			return jsonElement.getAsString();
 		}
 	}
 
