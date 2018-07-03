@@ -42,6 +42,12 @@ import io.soracom.krypton.cli.KryptonOperationHandler;
 import io.soracom.krypton.cli.OperationInfo;
 import io.soracom.krypton.common.KryptonClientRuntimeException;
 
+/**
+ * Command line for SORACOM Krypton
+ * 
+ * @author c9katayama
+ *
+ */
 public class SORACOMKryptonCLI {
 
 	private static final List<KryptonOperationHandler<?>> kryptonOptionHanderList = new ArrayList<>();
