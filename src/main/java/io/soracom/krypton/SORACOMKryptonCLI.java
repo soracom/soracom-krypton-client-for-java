@@ -31,36 +31,52 @@ import io.soracom.endorse.SORACOMEndorseCLI.EndorseCLIOptions;
 import io.soracom.endorse.SORACOMEndorseClientConfig;
 import io.soracom.endorse.common.TextLog;
 import io.soracom.endorse.utils.Utilities;
-import io.soracom.krypton.cli.BootstrapAwsIotThingOption;
-import io.soracom.krypton.cli.BootstrapInventoryDeviceOptionHandler;
+import io.soracom.krypton.cli.BootstrapAwsIotThingOperationHandler;
+import io.soracom.krypton.cli.BootstrapInventoryDeviceOperationHandler;
 import io.soracom.krypton.cli.CLIOutput;
-import io.soracom.krypton.cli.GenerateAmazonCognitoOpenIdTokenOptionHandler;
-import io.soracom.krypton.cli.GenerateAmazonCognitoSessionCredentialsOptionHandler;
-import io.soracom.krypton.cli.GetSubscriberMetadataOptionHandler;
-import io.soracom.krypton.cli.GetUserdataOptionHandler;
-import io.soracom.krypton.cli.KryptonOptionHandler;
+import io.soracom.krypton.cli.GenerateAmazonCognitoOpenIdTokenOperationHandler;
+import io.soracom.krypton.cli.GenerateAmazonCognitoSessionCredentialsOperationHandler;
+import io.soracom.krypton.cli.GetSubscriberMetadataOperationHandler;
+import io.soracom.krypton.cli.GetUserdataOperationHandler;
+import io.soracom.krypton.cli.KryptonOperationHandler;
+import io.soracom.krypton.cli.OperationInfo;
 import io.soracom.krypton.common.KryptonClientRuntimeException;
 
 public class SORACOMKryptonCLI {
 
-	private static final List<KryptonOptionHandler<?>> kryptonOptionHanderList = new ArrayList<>();
+	private static final List<KryptonOperationHandler<?>> kryptonOptionHanderList = new ArrayList<>();
 	static {
-		kryptonOptionHanderList.add(new BootstrapAwsIotThingOption());
-		kryptonOptionHanderList.add(new BootstrapInventoryDeviceOptionHandler());
-		kryptonOptionHanderList.add(new GenerateAmazonCognitoOpenIdTokenOptionHandler());
-		kryptonOptionHanderList.add(new GenerateAmazonCognitoSessionCredentialsOptionHandler());
-		kryptonOptionHanderList.add(new GetSubscriberMetadataOptionHandler());
-		kryptonOptionHanderList.add(new GetUserdataOptionHandler());
+		kryptonOptionHanderList.add(new GetSubscriberMetadataOperationHandler());
+		kryptonOptionHanderList.add(new GetUserdataOperationHandler());
+		kryptonOptionHanderList.add(new BootstrapInventoryDeviceOperationHandler());
+		kryptonOptionHanderList.add(new GenerateAmazonCognitoSessionCredentialsOperationHandler());
+		kryptonOptionHanderList.add(new GenerateAmazonCognitoOpenIdTokenOperationHandler());
+		kryptonOptionHanderList.add(new BootstrapAwsIotThingOperationHandler());
 	}
 
 	public static class KryptonCLIOptions {
+		public static final Option execOption;
+		static {
+			StringBuilder optionList = new StringBuilder();
+			optionList.append("Set operation of provisioning API(required).\nFollowing operations are supported:\n");
+			for (KryptonOperationHandler<?> provisioningApiHandler : kryptonOptionHanderList) {
+				OperationInfo info = provisioningApiHandler.getOperationInfo();
+				optionList.append("[ " + info.getOperation() + " ]: " + info.getDescription() + "\n");
+			}
+			optionList.append("(eg. -s getSubscriberMetadata )");
+			execOption = Option.builder("o").longOpt("operation").hasArg().required().desc(optionList.toString())
+					.valueSeparator().build();
+		}
+
 		public static final Option helpOption = Option.builder("h").longOpt("help")//
 				.desc("Display this help message and stop").build();
-		public static final Option provisioningApiEndpointUrlOption = Option.builder("pe").hasArg()
-				.longOpt("provisioningApiEndpointUrl")//
-				.desc("Set provisioning api endpoint url").build();
-		public static final Option requestParameterOption = Option.builder("rp").longOpt("requestParameters").hasArg()//
-				.desc("Set request parameter to invoke provisioning api.").build();
+		public static final Option provisioningApiEndpointUrlOption = Option.builder().hasArg()
+				.longOpt("provisioning-api-endpoint-url")//
+				.desc("Set provisioning api endpoint url. Default value is "
+						+ ProvisioningApiEndpoint.getDefault().getApiEndpoint())
+				.build();
+		public static final Option requestParameterOption = Option.builder("p").longOpt("params").hasArg()//
+				.desc("Set request parameter for invoking provisioning api.\n (eg. -p \"{'foo':'bar'}\" ").build();
 
 		public static final Option debugOption = Option.builder().longOpt("debug").desc("Set debug mode on").build();
 		public static final Option versionOption = Option.builder().longOpt("version").desc("Display version").build();
@@ -69,9 +85,7 @@ public class SORACOMKryptonCLI {
 	private static Options initOptions() {
 		final Options options = new Options();
 		// add provisioing APIs
-		for (KryptonOptionHandler<?> provisioningApiHandler : kryptonOptionHanderList) {
-			options.addOption(provisioningApiHandler.getOption());
-		}
+		options.addOption(KryptonCLIOptions.execOption);
 		options.addOption(KryptonCLIOptions.requestParameterOption);
 		options.addOption(EndorseCLIOptions.interfaceOption);
 		options.addOption(EndorseCLIOptions.portNameOption);
@@ -103,17 +117,8 @@ public class SORACOMKryptonCLI {
 			}
 		});
 		formatter.setWidth(200);
-		StringBuilder helpText = new StringBuilder();
-		helpText.append("\r\n");
-		helpText.append("To invoke generateAmazonCognitoSessionCredentials : \r\n");
-		helpText.append("soracom-krypton --generateAmazonCognitoSessionCredentials \r\n");
-		helpText.append("\r\n");
-		helpText.append("To invoke execute bootstrapInventoryDevice using card reader:\r\n");
-		helpText.append("soracom-krypton --bootstrapInventoryDevice -if iso7816 \r\n");
-		helpText.append("\r\n");
 
-		formatter.printHelp("soracom-krypton --provisioningAPIname [-if interface] [--help] [--debug]",
-				helpText.toString(), options, "");
+		formatter.printHelp("soracom-krypton -o [operation] -p [params]\n", "options:", options, "");
 	}
 
 	private static void displayVersion() {
@@ -164,25 +169,30 @@ public class SORACOMKryptonCLI {
 			if (line.hasOption(KryptonCLIOptions.requestParameterOption.getLongOpt())) {
 				paramJson = line.getOptionValue(KryptonCLIOptions.requestParameterOption.getLongOpt());
 			}
-			for (KryptonOptionHandler provisioningApiHandler : kryptonOptionHanderList) {
-				Option supportedOption = provisioningApiHandler.getOption();
-				if (line.hasOption(supportedOption.getLongOpt())) {
-					Object result = provisioningApiHandler.invoke(kryptonClientConfig, paramJson);
-					if (result == null) {
-						throw new KryptonClientRuntimeException("server response is empty.");
+
+			if (line.hasOption(KryptonCLIOptions.execOption.getLongOpt())) {
+				String execName = line.getOptionValue(KryptonCLIOptions.execOption.getLongOpt()).toLowerCase();
+				for (KryptonOperationHandler<?> provisioningApiHandler : kryptonOptionHanderList) {
+					OperationInfo info = provisioningApiHandler.getOperationInfo();
+					if (info.getOperation().toLowerCase().equals(execName)) {
+						Object result = provisioningApiHandler.invoke(kryptonClientConfig, paramJson);
+						if (result == null) {
+							System.exit(0);
+						}
+						if (result instanceof CLIOutput) {
+							System.out.println(((CLIOutput) result).toCLIOutput());
+						} else if (result instanceof String) {
+							System.out.println(result);
+						} else {
+							System.out.println(Utilities.toJson(result));
+						}
+						System.exit(0);
 					}
-					if (result instanceof CLIOutput) {
-						System.out.println(((CLIOutput) result).toCLIOutput());
-					} else if (result instanceof String) {
-						System.out.println(result);
-					} else {
-						System.out.println(Utilities.toJson(result));
-					}
-					System.exit(0);
 				}
+				throw new KryptonClientRuntimeException(execName + " is not supported.");
+			} else {
+				throw new KryptonClientRuntimeException(KryptonCLIOptions.execOption.getOpt() + " option is required.");
 			}
-			displayHelp(options);
-			System.exit(0);
 		} catch (Exception ex) {
 			TextLog.error(ex.getMessage());
 			System.exit(-1);
