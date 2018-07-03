@@ -46,7 +46,7 @@ repositories {
 }
 
 dependencies {
-    compile "io.soracom:soracom-krypton-client-for-java-core:$ENDORSE_VERSION"
+    compile "io.soracom:soracom-krypton-client-for-java-core:0.1.0"
 }
 ```
 
