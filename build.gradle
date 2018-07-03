@@ -33,6 +33,7 @@ dependencies {
     compile 'io.soracom:soracom-endorse-client-for-java:0.1.0-SNAPSHOT'
     compileOnly group: 'com.amazonaws', name: 'aws-java-sdk-sts', version: '1.11.358'
     testCompile 'junit:junit:4.12'
+    testCompile group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: '1.11.358'
 }
 
 task fatJar(type: Jar) {
