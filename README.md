@@ -1,6 +1,17 @@
 # soracom-krypton-client-for-java
 Java based client library for SORACOM Krypton 
 
+## To get pre-build binary
+Visit release page (https://github.com/soracom/soracom-krypton-client-for-java/releases) and download archives.
+
+- distributions/soracom-krypton-cli-xxx.zip( and tar)
+These archives are application archive that contains "soracom-krypton" command.
+
+- libs/soracom-krypton.jar
+Fat jar type of application archive. You can run krypton cli with "java -jar soracom-krypton.jar" command.
+
+You can run the binaries with Java7 runtime or later.
+
 ## How to build SORACOM Krypton client for Java
 User can use Gradle to build the project. If you want to build the project from source code, execute following command after checkout.
  
