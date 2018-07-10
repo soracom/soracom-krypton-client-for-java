@@ -57,7 +57,7 @@ repositories {
 }
 
 dependencies {
-    compile "io.soracom:soracom-krypton-client-for-java-core:0.1.0"
+    compile "io.soracom:soracom-krypton-client-for-java:0.1.0"
 }
 ```
 
