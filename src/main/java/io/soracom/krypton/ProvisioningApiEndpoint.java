@@ -45,6 +45,10 @@ public enum ProvisioningApiEndpoint {
 		return trimSlash(baseUrl) + "/v1/provisioning/aws/iot/bootstrap";
 	}
 
+	public static String bootstrapAzureIotDevice(String baseUrl) {
+		return trimSlash(baseUrl) + "/v1/provisioning/azure/iot/bootstrap";
+	}
+
 	public static String bootstrapInventoryDevice(String baseUrl) {
 		return trimSlash(baseUrl) + "/v1/provisioning/soracom/inventory/bootstrap";
 	}

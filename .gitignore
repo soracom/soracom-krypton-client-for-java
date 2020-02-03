@@ -10,3 +10,6 @@
 .gradle
 .gradle/
 maven-repository
+.idea/
+*.iml
+/out/
