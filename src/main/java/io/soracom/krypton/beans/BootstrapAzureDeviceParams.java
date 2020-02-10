@@ -4,9 +4,10 @@ public class BootstrapAzureDeviceParams {
 
 	private String deviceId;
 	private String globalEndpoint;
-	private String connectionString;
 	private String idScope;
-	private String credentialsId;
+	private String azureIotCredentialId;
+    private String x509CredentialId;
+    private boolean registerDevice;
 
 	public String getDeviceId() {
 		return deviceId;
@@ -23,14 +24,6 @@ public class BootstrapAzureDeviceParams {
 		this.globalEndpoint = globalEndpoint;
 	}
 
-	public String getConnectionString() {
-		return connectionString;
-	}
-
-	public void setConnectionString(String connectionString) {
-		this.connectionString = connectionString;
-	}
-
 	public String getIdScope() {
 		return idScope;
 	}
@@ -39,11 +32,27 @@ public class BootstrapAzureDeviceParams {
 		this.idScope = idScope;
 	}
 
-	public String getCredentialsId() {
-		return credentialsId;
-	}
+    public String getAzureIotCredentialId() {
+        return azureIotCredentialId;
+    }
 
-	public void setCredentialsId(String credentialsId) {
-		this.credentialsId = credentialsId;
-	}
+    public void setAzureIotCredentialId(String azureIotCredentialId) {
+        this.azureIotCredentialId = azureIotCredentialId;
+    }
+
+    public String getX509CredentialId() {
+        return x509CredentialId;
+    }
+
+    public void setX509CredentialId(String x509CredentialId) {
+        this.x509CredentialId = x509CredentialId;
+    }
+
+    public boolean isRegisterDevice() {
+        return registerDevice;
+    }
+
+    public void setRegisterDevice(boolean registerDevice) {
+        this.registerDevice = registerDevice;
+    }
 }

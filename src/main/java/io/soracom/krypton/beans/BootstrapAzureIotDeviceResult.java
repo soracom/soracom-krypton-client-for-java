@@ -5,8 +5,9 @@ public class BootstrapAzureIotDeviceResult {
 
 	private String certificate;
 	private String privateKey;
-	private String host;
 	private String deviceId;
+	private String operationId;
+    private String status;
 
 	public String getCertificate() {
 		return certificate;
@@ -24,14 +25,6 @@ public class BootstrapAzureIotDeviceResult {
 		this.privateKey = privateKey;
 	}
 
-	public String getHost() {
-		return host;
-	}
-
-	public void setHost(String host) {
-		this.host = host;
-	}
-
 	public String getDeviceId() {
 		return deviceId;
 	}
@@ -40,4 +33,19 @@ public class BootstrapAzureIotDeviceResult {
 		this.deviceId = deviceId;
 	}
 
+    public String getOperationId() {
+        return operationId;
+    }
+
+    public void setOperationId(String operationId) {
+        this.operationId = operationId;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 }
