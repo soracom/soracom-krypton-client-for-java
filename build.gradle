@@ -22,7 +22,7 @@ group = 'io.soracom'
 mainClassName = 'io.soracom.krypton.SORACOMKryptonCLI'
 archivesBaseName = rootProject.name
 
-version = '0.1.1-SNAPSHOT' 
+version = '0.2.0' 
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
