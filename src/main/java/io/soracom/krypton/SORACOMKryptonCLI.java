@@ -14,6 +14,7 @@
  */
 package io.soracom.krypton;
 
+import io.soracom.krypton.cli.BootstrapAzureIotDeviceOperationHandler;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -59,6 +60,7 @@ public class SORACOMKryptonCLI {
 		kryptonOptionHanderList.add(new GenerateAmazonCognitoSessionCredentialsOperationHandler());
 		kryptonOptionHanderList.add(new GenerateAmazonCognitoOpenIdTokenOperationHandler());
 		kryptonOptionHanderList.add(new BootstrapAwsIotThingOperationHandler());
+		kryptonOptionHanderList.add(new BootstrapAzureIotDeviceOperationHandler());
 	}
 
 	public static class KryptonCLIOptions {
@@ -70,7 +72,7 @@ public class SORACOMKryptonCLI {
 				OperationInfo info = provisioningApiHandler.getOperationInfo();
 				optionList.append("[ " + info.getOperation() + " ]: " + info.getDescription() + "\n");
 			}
-			optionList.append("(eg. -s getSubscriberMetadata )");
+			optionList.append("(eg. -o getSubscriberMetadata )");
 			execOption = Option.builder("o").longOpt("operation").hasArg().required().desc(optionList.toString())
 					.valueSeparator().build();
 		}

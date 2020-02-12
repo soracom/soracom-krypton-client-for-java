@@ -28,6 +28,8 @@ import io.soracom.endorse.common.TextLogItem;
 import io.soracom.endorse.keycache.AuthResult;
 import io.soracom.endorse.utils.Utilities;
 import io.soracom.krypton.beans.BootstrapAwsIotThingResult;
+import io.soracom.krypton.beans.BootstrapAzureIotDeviceResult;
+import io.soracom.krypton.beans.BootstrapAzureRequestParams;
 import io.soracom.krypton.beans.BootstrapInventoryDeviceParams;
 import io.soracom.krypton.beans.BootstrapInventoryDeviceResult;
 import io.soracom.krypton.beans.GenerateAmazonCognitoOpenIdTokenResult;
@@ -35,6 +37,7 @@ import io.soracom.krypton.beans.GenerateAmazonCognitoSessionCredentialsResult;
 import io.soracom.krypton.beans.GetSubscriberMetadataResult;
 import io.soracom.krypton.beans.ProvisioningBean;
 import io.soracom.krypton.common.KryptonClientRuntimeException;
+import io.soracom.krypton.beans.BootstrapAzureDeviceParams;
 
 public class SORACOMKryptonClient {
 
@@ -127,6 +130,13 @@ public class SORACOMKryptonClient {
 		TrustedEntityRequst request = new TrustedEntityRequst();
 		request.apiEndpointUrl = ProvisioningApiEndpoint.bootstrapAwsIotThing(kryptonClientConfig.getApiEndpointUrl());
 		return invokeKeyDistributionService(request, BootstrapAwsIotThingResult.class);
+	}
+
+	public BootstrapAzureIotDeviceResult bootstrapAzureIotDevice(BootstrapAzureDeviceParams params) {
+		TrustedEntityRequst request = new TrustedEntityRequst();
+        request.requestParameters = new BootstrapAzureRequestParams(params);
+		request.apiEndpointUrl = ProvisioningApiEndpoint.bootstrapAzureIotDevice(kryptonClientConfig.getApiEndpointUrl());
+		return invokeKeyDistributionService(request, BootstrapAzureIotDeviceResult.class);
 	}
 
 	private <T> T invokeKeyDistributionService(TrustedEntityRequst request, Class<T> resultClass) {
