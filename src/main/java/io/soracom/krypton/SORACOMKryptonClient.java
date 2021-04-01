@@ -82,7 +82,7 @@ public class SORACOMKryptonClient {
 		request.requestParameters = params;
 		request.apiEndpointUrl = ProvisioningApiEndpoint
 				.bootstrapInventoryDevice(kryptonClientConfig.getApiEndpointUrl());
-
+		kryptonClientConfig.getEndorseClientConfig().setKeyLength(16);
 		ProvisioningBean invokeProvisioingApiResult = invokeProvisioningApi(request, true);
 		BootstrapInventoryDeviceResult result = Utilities.fromJson(
 				invokeProvisioingApiResult.getServiceProviderResponse(), BootstrapInventoryDeviceResult.class);
