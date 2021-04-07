@@ -86,4 +86,31 @@ public class SORACOMKryptonCredentialsProviderTest {
 }
 ```
 
+## How to release new version of the library
+To releaser the library with a new version. you can use the tool "Gren".
+
+1 Setup Gren by npm
+
+```sh
+npm install github-release-notes -g
+```
+
+2 Set GitHub credential to your environment variable
+
+```sh
+export GREN_GITHUB_TOKEN=xxxxxx
+```
+
+3 Create new release with new version of tag(e.g 0.1.0 ) on GitHub
+ You can create the release with blank title and details.
+ 
+4 run Gren release --override" command.
+
+
+```sh
+gren release --override
+```
+
+
 The soracom-krypton-client-for-java is released under version 2.0 of Apache License
+
