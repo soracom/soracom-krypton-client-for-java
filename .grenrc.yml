@@ -1,0 +1,6 @@
+---
+  dataSource: "prs"
+  prefix: "Release "
+  onlyMilestones: false
+  groupBy: false
+  changelogFilename: "CHANGELOG.md"
