@@ -69,7 +69,7 @@ distributions {
 }
 
 task generateVersionText()  {
-    new File("src/main/resources/soracom-krypton-version").text = """Version: $version"""
+    new File(projectDir, "src/main/resources/soracom-krypton-version").text = """Version: $version"""
 }
 
 task sourceJar(type: Jar) {
