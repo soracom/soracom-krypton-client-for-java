@@ -35,6 +35,7 @@ import io.soracom.endorse.common.TextLog;
 import io.soracom.endorse.utils.Utilities;
 import io.soracom.krypton.cli.BootstrapAwsIotThingOperationHandler;
 import io.soracom.krypton.cli.BootstrapInventoryDeviceOperationHandler;
+import io.soracom.krypton.cli.BootstrapArcOperationHandler;
 import io.soracom.krypton.cli.CLIOutput;
 import io.soracom.krypton.cli.GenerateAmazonCognitoOpenIdTokenOperationHandler;
 import io.soracom.krypton.cli.GenerateAmazonCognitoSessionCredentialsOperationHandler;
@@ -61,6 +62,7 @@ public class SORACOMKryptonCLI {
 		kryptonOptionHanderList.add(new GenerateAmazonCognitoOpenIdTokenOperationHandler());
 		kryptonOptionHanderList.add(new BootstrapAwsIotThingOperationHandler());
 		kryptonOptionHanderList.add(new BootstrapAzureIotDeviceOperationHandler());
+    kryptonOptionHanderList.add(new BootstrapArcOperationHandler());
 	}
 
 	public static class KryptonCLIOptions {
