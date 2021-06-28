@@ -53,6 +53,10 @@ public enum ProvisioningApiEndpoint {
 		return trimSlash(baseUrl) + "/v1/provisioning/soracom/inventory/bootstrap";
 	}
 
+	public static String bootstrapArcDevice(String baseUrl) {
+		return trimSlash(baseUrl) + "/v1/provisioning/soracom/arc/bootstrap";
+	}
+
 	public static String generateAmazonCognitoOpenIdToken(String baseUrl) {
 		return trimSlash(baseUrl) + "/v1/provisioning/aws/cognito/open_id_tokens";
 	}

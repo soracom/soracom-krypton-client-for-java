@@ -36,6 +36,8 @@ import io.soracom.krypton.beans.GenerateAmazonCognitoOpenIdTokenResult;
 import io.soracom.krypton.beans.GenerateAmazonCognitoSessionCredentialsResult;
 import io.soracom.krypton.beans.GetSubscriberMetadataResult;
 import io.soracom.krypton.beans.ProvisioningBean;
+import io.soracom.krypton.beans.BootstrapArcParams;
+import io.soracom.krypton.beans.BootstrapArcResult;
 import io.soracom.krypton.common.KryptonClientRuntimeException;
 import io.soracom.krypton.beans.BootstrapAzureDeviceParams;
 
@@ -87,6 +89,17 @@ public class SORACOMKryptonClient {
 		BootstrapInventoryDeviceResult result = Utilities.fromJson(
 				invokeProvisioingApiResult.getServiceProviderResponse(), BootstrapInventoryDeviceResult.class);
 		result.setApplicationKey(invokeProvisioingApiResult.getApplicationKey());
+		return result;
+	}
+
+	public BootstrapArcResult bootstrapArc(BootstrapArcParams params) {
+		TrustedEntityRequst request = new TrustedEntityRequst();
+		request.requestParameters = params;
+		request.apiEndpointUrl = ProvisioningApiEndpoint
+				.bootstrapArcDevice(kryptonClientConfig.getApiEndpointUrl());
+		ProvisioningBean invokeProvisioingApiResult = invokeProvisioningApi(request, false);
+		BootstrapArcResult result = Utilities.fromJson(
+				invokeProvisioingApiResult.getServiceProviderResponse(), BootstrapArcResult.class);
 		return result;
 	}
 
