@@ -62,7 +62,7 @@ public class SORACOMKryptonCLI {
 		kryptonOptionHanderList.add(new GenerateAmazonCognitoOpenIdTokenOperationHandler());
 		kryptonOptionHanderList.add(new BootstrapAwsIotThingOperationHandler());
 		kryptonOptionHanderList.add(new BootstrapAzureIotDeviceOperationHandler());
-    kryptonOptionHanderList.add(new BootstrapArcOperationHandler());
+		kryptonOptionHanderList.add(new BootstrapArcOperationHandler());
 	}
 
 	public static class KryptonCLIOptions {
