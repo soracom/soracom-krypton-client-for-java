@@ -8,6 +8,7 @@ public class BootstrapAzureDeviceParams {
 	private String azureIotCredentialId;
     private String x509CredentialId;
     private boolean registerDevice;
+	private String host;		 
 
 	public String getDeviceId() {
 		return deviceId;
@@ -55,4 +56,12 @@ public class BootstrapAzureDeviceParams {
     public void setRegisterDevice(boolean registerDevice) {
         this.registerDevice = registerDevice;
     }
+	
+	public String getHost() {
+		return host;
+	}
+
+	public void setHost(String host) {
+		this.host = host;
+	}
 }
