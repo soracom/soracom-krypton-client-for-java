@@ -49,6 +49,14 @@ public enum ProvisioningApiEndpoint {
 		return trimSlash(baseUrl) + "/v1/provisioning/azure/iot/bootstrap";
 	}
 
+	public static String registerAzureIotDevice(String baseUrl) {
+		return trimSlash(baseUrl) + "/v1/provisioning/azure/iot/register";
+	}
+
+	public static String getAzureIotDeviceRegistrationStatus(String baseUrl, String operationId) {
+		return String.format("%s/v1/provisioning/azure/iot/registrations/%s",trimSlash(baseUrl),operationId);
+	}
+
 	public static String bootstrapInventoryDevice(String baseUrl) {
 		return trimSlash(baseUrl) + "/v1/provisioning/soracom/inventory/bootstrap";
 	}
