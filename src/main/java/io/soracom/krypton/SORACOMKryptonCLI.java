@@ -13,8 +13,6 @@
  * limitations under the License.
  */
 package io.soracom.krypton;
-
-import io.soracom.krypton.cli.BootstrapAzureIotDeviceOperationHandler;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -36,6 +34,10 @@ import io.soracom.endorse.utils.Utilities;
 import io.soracom.krypton.cli.BootstrapAwsIotThingOperationHandler;
 import io.soracom.krypton.cli.BootstrapInventoryDeviceOperationHandler;
 import io.soracom.krypton.cli.BootstrapArcOperationHandler;
+import io.soracom.krypton.cli.BootstrapAzureIotDeviceOperationHandler;
+import io.soracom.krypton.cli.RegisterAzureIotDeviceOperationHandler;
+import io.soracom.krypton.cli.GetAzureIotDeviceRegistrationStatusOperationHandler;
+
 import io.soracom.krypton.cli.CLIOutput;
 import io.soracom.krypton.cli.GenerateAmazonCognitoOpenIdTokenOperationHandler;
 import io.soracom.krypton.cli.GenerateAmazonCognitoSessionCredentialsOperationHandler;
@@ -62,6 +64,8 @@ public class SORACOMKryptonCLI {
 		kryptonOptionHanderList.add(new GenerateAmazonCognitoOpenIdTokenOperationHandler());
 		kryptonOptionHanderList.add(new BootstrapAwsIotThingOperationHandler());
 		kryptonOptionHanderList.add(new BootstrapAzureIotDeviceOperationHandler());
+		kryptonOptionHanderList.add(new RegisterAzureIotDeviceOperationHandler());
+		kryptonOptionHanderList.add(new GetAzureIotDeviceRegistrationStatusOperationHandler());
 		kryptonOptionHanderList.add(new BootstrapArcOperationHandler());
 	}
 
